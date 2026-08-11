@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Project Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <h1>Project Manager</h1>
+
+        <div>
+            <span>Welcome, {{ username }}</span>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </nav>
+
+
+    <main class="dashboard">
+
+        <h2>Dashboard</h2>
+
+        <div class="stats">
+
+            <div class="card">
+                <h3>Projects</h3>
+                <p>0</p>
+            </div>
+
+            <div class="card">
+                <h3>Tasks</h3>
+                <p>0</p>
+            </div>
+
+            <div class="card">
+                <h3>Completed</h3>
+                <p>0</p>
+            </div>
+
+            <div class="card">
+                <h3>Overdue</h3>
+                <p>0</p>
+            </div>
+
+        </div>
+
+
+        <section class="projects-section">
+
+            <div class="section-header">
+                <h2>My Projects</h2>
+
+                <button>+ New Project</button>
+            </div>
+
+            <div class="project-list">
+
+                <p>No projects yet.</p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>
