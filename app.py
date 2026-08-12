@@ -54,7 +54,6 @@ def dashboard():
     )
     
 @app.route("/register", methods=["GET", "POST"])
-
 def register():
 
     if request.method == "POST":
@@ -118,8 +117,126 @@ def create_project():
     
     return render_template("create_project.html")
 
+@app.route("/projects/<int:project_id>")
+def project(project_id):
 
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (project_id, session["user_id"])).fetchone()
+
+    connection.close()
+
+    if project is None:
+        return "Project not found", 404
+
+    return render_template(
+        "project.html",
+        project=project,
+        username=session["username"]
+    )
+    
+@app.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
+def edit_project(project_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (project_id, session["user_id"])).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    if request.method == "POST":
+
+        name = request.form["name"]
+        description = request.form["description"]
+
+        connection.execute("""
+            UPDATE projects
+            SET name = ?, description = ?
+            WHERE id = ? AND user_id = ?
+        """, (
+            name,
+            description,
+            project_id,
+            session["user_id"]
+        ))
+
+        connection.commit()
+        connection.close()
+
+        return redirect(url_for(
+            "project",
+            project_id=project_id
+        ))
+
+    connection.close()
+
+    return render_template(
+        "edit_project.html",
+        project=project
+    )
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (project_id, session["user_id"])).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    if request.method == "POST":
+
+        name = request.form["name"]
+        description = request.form["description"]
+
+        connection.execute("""
+            UPDATE projects
+            SET name = ?, description = ?
+            WHERE id = ? AND user_id = ?
+        """, (
+            name,
+            description,
+            project_id,
+            session["user_id"]
+        ))
+
+        connection.commit()
+        connection.close()
+
+        return redirect(url_for(
+            "project",
+            project_id=project_id
+        ))
+
+    connection.close()
+
+    return render_template(
+        "edit_project.html",
+        project=project
+    )
+    
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)

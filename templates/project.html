@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ project["name"] }}</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <h1>Project Manager</h1>
+
+        <div>
+            <span>Welcome, {{ username }}</span>
+
+            <a href="{{ url_for('logout') }}">
+                Logout
+            </a>
+        </div>
+
+    </nav>
+
+
+    <main class="dashboard">
+
+        <a href="{{ url_for('dashboard') }}">
+            ← Back to Dashboard
+        </a>
+
+        <h2>{{ project["name"] }}</h2>
+
+        <p>
+            {{ project["description"] }}
+        </p>
+
+        <small>
+            Created: {{ project["created_at"] }}
+        </small>
+        
+        <a href="{{ url_for('edit_project', project_id=project['id']) }}">
+            <button>Edit Project</button>
+        </a>
+        
+    </main>
+
+</body>
+
+</html>
