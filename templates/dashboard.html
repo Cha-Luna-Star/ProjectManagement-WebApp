@@ -53,13 +53,37 @@
             <div class="section-header">
                 <h2>My Projects</h2>
 
-                <button>+ New Project</button>
+                <a href="{{ url_for('create_project') }}">
+                    <button>+ New Project</button>
+                </a>            
             </div>
 
             <div class="project-list">
 
-                <p>No projects yet.</p>
-
+                {% if projects %}
+            
+                    {% for project in projects %}
+            
+                        <div class="project-card">
+            
+                            <h3>{{ project["name"] }}</h3>
+            
+                            <p>{{ project["description"] }}</p>
+            
+                            <small>
+                                Created: {{ project["created_at"] }}
+                            </small>
+            
+                        </div>
+            
+                    {% endfor %}
+            
+                {% else %}
+            
+                    <p>No projects yet.</p>
+            
+                {% endif %}
+            
             </div>
 
         </section>

@@ -36,11 +36,25 @@ def dashboard():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    connection = get_db()
+    
+    projects = connection.execute("""
+            SELECT *
+            FROM projects
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+    """, (session["user_id"],)).fetchall()
+    
+    connection.close()
+    
     return render_template(
         "dashboard.html",
-        username=session["username"]
+        username=session["username"],
+        projects = projects
     )
+    
 @app.route("/register", methods=["GET", "POST"])
+
 def register():
 
     if request.method == "POST":
@@ -75,6 +89,35 @@ def logout():
     session.clear()
     
     return redirect(url_for("login"))
+
+@app.route("/projects/create", methods = ["GET", "POST"])
+def create_project():
+    
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        name = request.form["name"]
+        description = request.form["description"]
+        
+        connection = get_db()
+        
+        connection.execute(""" 
+                INSERT INTO projects (user_id, name, description)
+                VALUES (?, ?, ?)        
+        """, (
+            session["user_id"],
+            name,
+            description
+        ))
+        
+        connection.commit()
+        connection.close()
+        
+        return redirect(url_for("dashboard"))
+    
+    return render_template("create_project.html")
+
 
 
 if __name__ == "__main__":
