@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Create Task</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <h1>Project Manager</h1>
+
+        <a href="{{ url_for('project', project_id=project['id']) }}">
+            Back to Project
+        </a>
+
+    </nav>
+
+
+    <main class="dashboard">
+
+        <h2>Create Task</h2>
+
+        <p>
+            Project: {{ project["name"] }}
+        </p>
+
+
+        <form method="POST">
+
+            <div>
+
+                <label for="title">
+                    Task Title
+                </label>
+
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    required
+                >
+
+            </div>
+
+
+            <div>
+
+                <label for="description">
+                    Description
+                </label>
+
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="5"
+                ></textarea>
+
+            </div>
+
+
+            <button type="submit">
+                Create Task
+            </button>
+
+        </form>
+
+    </main>
+
+</body>
+
+</html>
