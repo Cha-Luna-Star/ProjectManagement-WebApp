@@ -117,7 +117,7 @@ def create_project():
     
     return render_template("create_project.html")
 
-@app.route("/projects/<int:project_id>")
+@app.route("/projects/<int:project_id>")    
 def project(project_id):
 
     if "user_id" not in session:
@@ -236,7 +236,24 @@ def edit_project(project_id):
         "edit_project.html",
         project=project
     )
+
+@app.route("/projects/<int:project_id>/delete", methods=["GET", "POST"])
+def delete_project(project_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
     
+    connection = get_db()
+
+    connection.execute("""
+            DELETE FROM projects
+            WHERE id =? AND user_id = ?
+    """, (project_id, session["user_id"]))
+    
+    connection.commit()
+    connection.close()
+    
+    return render_template(url_for("dashboard"))
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
