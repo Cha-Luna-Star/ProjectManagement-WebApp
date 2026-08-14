@@ -46,6 +46,58 @@
         <hr>
 
         <h2>Tasks</h2>
+        
+        <div class="task-counts">
+
+            <span>
+                Total: {{ task_counts["total"] }}
+            </span>
+        
+            <span>
+                Pending: {{ task_counts["pending"] }}
+            </span>
+        
+            <span>
+                In Progress: {{ task_counts["in_progress"] }}
+            </span>
+        
+            <span>
+                Completed: {{ task_counts["completed"] }}
+            </span>
+        
+        </div>
+        
+        <div class="task-filters">
+
+            <a href="{{ url_for('project', project_id=project['id']) }}">
+                <button type="button">All</button>
+            </a>
+        
+            <a href="{{ url_for(
+                'project',
+                project_id=project['id'],
+                status='Pending'
+            ) }}">
+                <button type="button">Pending</button>
+            </a>
+        
+            <a href="{{ url_for(
+                'project',
+                project_id=project['id'],
+                status='In Progress'
+            ) }}">
+                <button type="button">In Progress</button>
+            </a>
+        
+            <a href="{{ url_for(
+                'project',
+                project_id=project['id'],
+                status='Completed'
+            ) }}">
+                <button type="button">Completed</button>
+            </a>
+        
+        </div>
 
         <a href="{{ url_for('create_task', project_id=project['id']) }}">
             <button>Create Task</button>

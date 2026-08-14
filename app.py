@@ -135,13 +135,82 @@ def project(project_id):
         connection.close()
         return "Project not found", 404
 
-    tasks = connection.execute("""
-        SELECT *
+    # Get task counts
+    task_counts = connection.execute("""
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) AS pending,
+            SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress,
+            SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed
         FROM tasks
         WHERE project_id = ?
-        ORDER BY created_at DESC
-    """, (project_id,)).fetchall()
+    """, (project_id,)).fetchone()
 
+    # Get selected status from URL
+    status = request.args.get("status")
+
+    if status in ["Pending", "In Progress", "Completed"]:
+
+        tasks = connection.execute("""
+            SELECT *
+            FROM tasks
+            WHERE project_id = ? AND status = ?
+            ORDER BY created_at DESC
+        """, (project_id, status)).fetchall()
+
+    else:
+
+        tasks = connection.execute("""
+            SELECT *
+            FROM tasks
+            WHERE project_id = ?
+            ORDER BY created_at DESC
+        """, (project_id,)).fetchall()
+
+    connection.close()
+
+    return render_template(
+        "project.html",
+        project=project,
+        tasks=tasks,
+        task_counts=task_counts,
+        username=session["username"]
+    )
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (project_id, session["user_id"])).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    status = request.args.get("status")
+
+    if status in ["Pending", "In Progress", "Completed"]:
+
+        tasks = connection.execute("""
+            SELECT *
+            FROM tasks
+            WHERE project_id = ? AND status = ?
+            ORDER BY created_at DESC
+        """, (project_id, status)).fetchall()
+
+    else:
+
+        tasks = connection.execute("""
+            SELECT *
+            FROM tasks
+            WHERE project_id = ?
+            ORDER BY created_at DESC
+        """, (project_id,)).fetchall()
     connection.close()
 
     return render_template(
