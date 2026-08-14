@@ -117,8 +117,39 @@ def create_project():
     
     return render_template("create_project.html")
 
-@app.route("/projects/<int:project_id>")    
+@app.route("/projects/<int:project_id>")
 def project(project_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (project_id, session["user_id"])).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    tasks = connection.execute("""
+        SELECT *
+        FROM tasks
+        WHERE project_id = ?
+        ORDER BY created_at DESC
+    """, (project_id,)).fetchall()
+
+    connection.close()
+
+    return render_template(
+        "project.html",
+        project=project,
+        tasks=tasks,
+        username=session["username"]
+    )
 
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -254,6 +285,157 @@ def delete_project(project_id):
     
     return render_template(url_for("dashboard"))
 
+@app.route("/projects/<int:project_id>/tasks/create", methods=["GET", "POST"])
+def create_task(project_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (project_id, session["user_id"])).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    if request.method == "POST":
+
+        title = request.form["title"]
+        description = request.form["description"]
+
+        connection.execute("""
+            INSERT INTO tasks (project_id, title, description)
+            VALUES (?, ?, ?)
+        """, (
+            project_id,
+            title,
+            description
+        ))
+
+        connection.commit()
+        connection.close()
+
+        return redirect(url_for(
+            "project",
+            project_id=project_id
+        ))
+
+    connection.close()
+
+    return render_template(
+        "create_task.html",
+        project=project
+    )
+
+@app.route("/projects/<int:project_id>/tasks/<int:task_id>/edit", methods=["GET", "POST"])
+def edit_task(project_id, task_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    # Make sure the task belongs to the project
+    # and the project belongs to the logged-in user
+    task = connection.execute("""
+        SELECT tasks.*
+        FROM tasks
+        JOIN projects ON tasks.project_id = projects.id
+        WHERE tasks.id = ?
+        AND tasks.project_id = ?
+        AND projects.user_id = ?
+    """, (
+        task_id,
+        project_id,
+        session["user_id"]
+    )).fetchone()
+
+    if task is None:
+        connection.close()
+        return "Task not found", 404
+
+    if request.method == "POST":
+
+        title = request.form["title"]
+        description = request.form["description"]
+        status = request.form["status"]
+
+        connection.execute("""
+            UPDATE tasks
+            SET title = ?, description = ?, status = ?
+            WHERE id = ? AND project_id = ?
+        """, (
+            title,
+            description,
+            status,
+            task_id,
+            project_id
+        ))
+
+        connection.commit()
+        connection.close()
+
+        return redirect(url_for(
+            "project",
+            project_id=project_id
+        ))
+
+    connection.close()
+
+    return render_template(
+        "edit_task.html",
+        task=task,
+        project_id=project_id
+    )
+
+@app.route("/projects/<int:project_id>/tasks/<int:task_id>/delete", methods=["POST"])
+def delete_task(project_id, task_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    # Make sure the task belongs to the project
+    # and the project belongs to the logged-in user
+    task = connection.execute("""
+        SELECT tasks.id
+        FROM tasks
+        JOIN projects ON tasks.project_id = projects.id
+        WHERE tasks.id = ?
+        AND tasks.project_id = ?
+        AND projects.user_id = ?
+    """, (
+        task_id,
+        project_id,
+        session["user_id"]
+    )).fetchone()
+
+    if task is None:
+        connection.close()
+        return "Task not found", 404
+
+    connection.execute("""
+        DELETE FROM tasks
+        WHERE id = ? AND project_id = ?
+    """, (
+        task_id,
+        project_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+    return redirect(url_for(
+        "project",
+        project_id=project_id
+    ))
+    
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
