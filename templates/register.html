@@ -1,37 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Project Manager</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Register</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/base.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/auth.css') }}">
+
 </head>
 
 <body>
 
-    <div class="login-container">
+    <main class="auth-page">
 
-        <h1>Project Manager</h1>
-        <h2>Register</h2>
+        <div class="auth-card">
 
-        <form method="POST">
+            <h2>Create Account</h2>
 
-            <label>Username</label>
-            <input type="text" name="username" required>
+            <p>
+                Create your Project Manager account.
+            </p>
 
-            <label>Password</label>
-            <input type="password" name="password" required>
+            <form method="POST">
 
-            <button type="submit">Register</button>
+                <div>
 
-        </form>
+                    <label for="username">
+                        Username
+                    </label>
 
-        <p>
-            Already have an account?
-            <a href="{{ url_for('login') }}">Login</a>
-        </p>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        required
+                    >
 
-    </div>
+                </div>
+
+                <div>
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                    >
+
+                </div>
+
+                <button type="submit">
+                    Register
+                </button>
+
+            </form>
+
+            <p class="auth-link">
+                Already have an account?
+                <a href="{{ url_for('login') }}">
+                    Login
+                </a>
+            </p>
+
+        </div>
+
+    </main>
 
 </body>
+
 </html>

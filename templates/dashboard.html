@@ -1,98 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Project Manager</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard</title>
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='css/base.css') }}">
+
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/navbar.css') }}">
+
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/responsive.css') }}">
 </head>
 
 <body>
 
     <nav class="navbar">
+
         <h1>Project Manager</h1>
 
         <div>
             <span>Welcome, {{ username }}</span>
-            <a href="{{ url_for('logout') }}">Logout</a>
+
+            <a href="{{ url_for('logout') }}">
+                Logout
+            </a>
         </div>
+
     </nav>
 
 
     <main class="dashboard">
 
-        <h2>Dashboard</h2>
+        <div class="page-header">
 
-        <div class="stats">
+            <div>
+                <h2>Your Projects</h2>
 
-            <div class="card">
-                <h3>Projects</h3>
-                <p>0</p>
+                <p>
+                    Manage your projects and tasks.
+                </p>
             </div>
 
-            <div class="card">
-                <h3>Tasks</h3>
-                <p>0</p>
-            </div>
-
-            <div class="card">
-                <h3>Completed</h3>
-                <p>0</p>
-            </div>
-
-            <div class="card">
-                <h3>Overdue</h3>
-                <p>0</p>
-            </div>
+            <a href="{{ url_for('create_project') }}">
+                <button>
+                    + New Project
+                </button>
+            </a>
 
         </div>
 
 
-        <section class="projects-section">
+        <div class="project-list">
 
-            <div class="section-header">
-                <h2>My Projects</h2>
+            {% if projects %}
 
-                <a href="{{ url_for('create_project') }}">
-                    <button>+ New Project</button>
-                </a>            
-            </div>
+                {% for project in projects %}
 
-            <div class="project-list">
-
-                {% if projects %}
-            
-                    {% for project in projects %}
-            
                     <div class="project-card">
 
-                        <h3>
-                            <a href="{{ url_for('project', project_id=project['id']) }}">
-                                {{ project["name"] }}
-                            </a>
-                        </h3>
-                    
-                        <p>{{ project["description"] }}</p>
-                    
-                        <small>
-                            Created: {{ project["created_at"] }}
-                        </small>
-                    
-                    </div>
-            
-                    {% endfor %}
-            
-                {% else %}
-            
-                    <p>No projects yet.</p>
-            
-                {% endif %}
-            
-            </div>
+                        <div class="project-card-content">
 
-        </section>
+                            <h3>
+                                <a href="{{ url_for(
+                                    'project',
+                                    project_id=project['id']
+                                ) }}">
+                                    {{ project["name"] }}
+                                </a>
+                            </h3>
+
+                            <p>
+                                {{ project["description"] }}
+                            </p>
+
+                            <small>
+                                Created: {{ project["created_at"] }}
+                            </small>
+
+                        </div>
+
+                        <a href="{{ url_for(
+                            'project',
+                            project_id=project['id']
+                        ) }}">
+                            <button type="button">
+                                Open Project
+                            </button>
+                        </a>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-state">
+
+                    <h3>No projects yet</h3>
+
+                    <p>
+                        Create your first project to get started.
+                    </p>
+
+                    <a href="{{ url_for('create_project') }}">
+                        <button>
+                            + Create Project
+                        </button>
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
 
     </main>
 
 </body>
+
 </html>
