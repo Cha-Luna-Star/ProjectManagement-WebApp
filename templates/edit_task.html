@@ -91,6 +91,36 @@
 
             </div>
 
+            <div>
+
+                <label for="priority">
+                    Priority
+                </label>
+            
+                <select
+                    id="priority"
+                    name="priority"
+                >
+            
+                    <option value="Low"
+                        {% if task["priority"] == "Low" %}selected{% endif %}>
+                        Low
+                    </option>
+            
+                    <option value="Medium"
+                        {% if task["priority"] == "Medium" %}selected{% endif %}>
+                        Medium
+                    </option>
+            
+                    <option value="High"
+                        {% if task["priority"] == "High" %}selected{% endif %}>
+                        High
+                    </option>
+            
+                </select>
+            
+            </div>
+
             <button type="submit">
                 Save Changes
             </button>

@@ -148,24 +148,30 @@ def project(project_id):
 
     # Get selected status from URL
     status = request.args.get("status")
+    priority = request.args.get("priority")
+
+    query = """
+        SELECT *
+        FROM tasks
+        WHERE project_id = ?
+    """
+
+    params = [project_id]
 
     if status in ["Pending", "In Progress", "Completed"]:
+        query += " AND status = ?"
+        params.append(status)
 
-        tasks = connection.execute("""
-            SELECT *
-            FROM tasks
-            WHERE project_id = ? AND status = ?
-            ORDER BY created_at DESC
-        """, (project_id, status)).fetchall()
+    if priority in ["Low", "Medium", "High"]:
+        query += " AND priority = ?"
+        params.append(priority)
 
-    else:
+    query += " ORDER BY created_at DESC"
 
-        tasks = connection.execute("""
-            SELECT *
-            FROM tasks
-            WHERE project_id = ?
-            ORDER BY created_at DESC
-        """, (project_id,)).fetchall()
+    tasks = connection.execute(
+        query,
+        params
+    ).fetchall()
 
     connection.close()
 
@@ -376,16 +382,17 @@ def create_task(project_id):
 
         title = request.form["title"]
         description = request.form["description"]
+        priority = request.form["priority"]
 
         connection.execute("""
-            INSERT INTO tasks (project_id, title, description)
-            VALUES (?, ?, ?)
+            INSERT INTO tasks (project_id, title, description, priority)
+            VALUES (?, ?, ?, ?)
         """, (
             project_id,
             title,
-            description
+            description,
+            priority
         ))
-
         connection.commit()
         connection.close()
 
@@ -433,17 +440,20 @@ def edit_task(project_id, task_id):
         title = request.form["title"]
         description = request.form["description"]
         status = request.form["status"]
+        priority = request.form["priority"]
+
 
         connection.execute("""
             UPDATE tasks
-            SET title = ?, description = ?, status = ?
+            SET title = ?, description = ?, status = ?, priority = ?
             WHERE id = ? AND project_id = ?
         """, (
             title,
             description,
             status,
+            priority,
             task_id,
-            project_id
+            project_id,
         ))
 
         connection.commit()

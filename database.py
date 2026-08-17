@@ -32,14 +32,16 @@ def init_db():
     connection.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_id INTEGER NOT NULL,                   
-            title TEXT NOT NULL,       
-            description TEXT, 
+            project_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT,
             status TEXT NOT NULL DEFAULT 'Pending',
+            priority TEXT NOT NULL DEFAULT 'Medium',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (projects_id) REFERENCES projects(id)                    
+            FOREIGN KEY (project_id) REFERENCES projects(id)
         )
     """)
+        
         
     connection.commit()
     connection.close()

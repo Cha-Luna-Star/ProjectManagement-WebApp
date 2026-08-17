@@ -69,14 +69,20 @@
         
         <div class="task-filters">
 
-            <a href="{{ url_for('project', project_id=project['id']) }}">
+            <p>Status:</p>
+        
+            <a href="{{ url_for(
+                'project',
+                project_id=project['id']
+            ) }}">
                 <button type="button">All</button>
             </a>
         
             <a href="{{ url_for(
                 'project',
                 project_id=project['id'],
-                status='Pending'
+                status='Pending',
+                priority=request.args.get('priority')
             ) }}">
                 <button type="button">Pending</button>
             </a>
@@ -84,7 +90,8 @@
             <a href="{{ url_for(
                 'project',
                 project_id=project['id'],
-                status='In Progress'
+                status='In Progress',
+                priority=request.args.get('priority')
             ) }}">
                 <button type="button">In Progress</button>
             </a>
@@ -92,9 +99,48 @@
             <a href="{{ url_for(
                 'project',
                 project_id=project['id'],
-                status='Completed'
+                status='Completed',
+                priority=request.args.get('priority')
             ) }}">
                 <button type="button">Completed</button>
+            </a>
+        
+        
+            <p>Priority:</p>
+        
+            <a href="{{ url_for(
+                'project',
+                project_id=project['id'],
+                status=request.args.get('status')
+            ) }}">
+                <button type="button">All</button>
+            </a>
+        
+            <a href="{{ url_for(
+                'project',
+                project_id=project['id'],
+                status=request.args.get('status'),
+                priority='Low'
+            ) }}">
+                <button type="button">Low</button>
+            </a>
+        
+            <a href="{{ url_for(
+                'project',
+                project_id=project['id'],
+                status=request.args.get('status'),
+                priority='Medium'
+            ) }}">
+                <button type="button">Medium</button>
+            </a>
+        
+            <a href="{{ url_for(
+                'project',
+                project_id=project['id'],
+                status=request.args.get('status'),
+                priority='High'
+            ) }}">
+                <button type="button">High</button>
             </a>
         
         </div>
@@ -116,9 +162,17 @@
             
                 <p>{{ task["description"] }}</p>
             
-                <p>
-                    Status: {{ task["status"] }}
-                </p>
+                <div class="task-meta">
+
+                    <span class="status-badge">
+                        {{ task["status"] }}
+                    </span>
+                
+                    <span class="priority-badge">
+                        {{ task["priority"] }} Priority
+                    </span>
+                
+                </div>
             
                 <small>
                     Created: {{ task["created_at"] }}
