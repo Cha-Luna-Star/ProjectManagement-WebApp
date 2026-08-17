@@ -1,0 +1,36 @@
+.project-header {
+    background: white;
+
+    padding: 25px;
+
+    border-radius: 10px;
+
+    margin-bottom: 25px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.project-header h2 {
+    margin-top: 0;
+}
+
+.project-header p {
+    color: #555;
+}
+
+.project-actions {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+.project-actions .delete-button {
+    background: #dc2626;
+}
+
+.project-actions .delete-button:hover {
+    background: #b91c1c;
+}

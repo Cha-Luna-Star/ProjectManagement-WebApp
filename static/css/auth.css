@@ -1,0 +1,100 @@
+/* =========================
+   AUTH PAGE
+========================= */
+
+.auth-page {
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+}
+
+
+/* =========================
+   AUTH CARD
+========================= */
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+
+    background: white;
+
+    padding: 35px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.auth-card h2 {
+    margin-top: 0;
+    margin-bottom: 8px;
+
+    font-size: 28px;
+}
+
+.auth-card > p {
+    color: #6b7280;
+
+    margin-bottom: 25px;
+}
+
+
+/* =========================
+   AUTH FORM
+========================= */
+
+.auth-card form {
+    padding: 0;
+
+    box-shadow: none;
+
+    background: transparent;
+}
+
+.auth-card form div {
+    margin-bottom: 18px;
+}
+
+.auth-card input {
+    width: 100%;
+    height: 30px;
+}
+
+
+/* =========================
+   AUTH BUTTON
+========================= */
+
+.auth-card button {
+    width: 100%;
+
+    margin-top: 5px;
+}
+
+
+/* =========================
+   AUTH LINK
+========================= */
+
+.auth-link {
+    text-align: center;
+
+    margin-top: 20px;
+
+    color: #6b7280;
+}
+
+.auth-link a {
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-link a:hover {
+    text-decoration: underline;
+}
