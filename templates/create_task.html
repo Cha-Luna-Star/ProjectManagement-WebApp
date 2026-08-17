@@ -28,6 +28,25 @@
 
         <h1>Project Manager</h1>
 
+        <div class="navbar-right">
+
+            <span class="navbar-username">
+                Welcome, {{ username }}
+            </span>
+        
+            <a href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+        
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-link"
+            >
+                Logout
+            </a>
+        
+        </div>
+        
         <a href="{{ url_for('project', project_id=project['id']) }}">
             Back to Project
         </a>

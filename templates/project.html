@@ -2,25 +2,29 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>{{ project["name"] }}</title>
 
     <link rel="stylesheet"
-    href="{{ url_for('static', filename='css/base.css') }}">
+          href="{{ url_for('static', filename='css/base.css') }}">
 
     <link rel="stylesheet"
-        href="{{ url_for('static', filename='css/navbar.css') }}">
+          href="{{ url_for('static', filename='css/navbar.css') }}">
 
     <link rel="stylesheet"
-        href="{{ url_for('static', filename='css/project.css') }}">
+          href="{{ url_for('static', filename='css/project.css') }}">
 
     <link rel="stylesheet"
-        href="{{ url_for('static', filename='css/tasks.css') }}">
+          href="{{ url_for('static', filename='css/tasks.css') }}">
 
     <link rel="stylesheet"
-        href="{{ url_for('static', filename='css/responsive.css') }}">
+          href="{{ url_for('static', filename='css/responsive.css') }}">
+
 </head>
 
 <body>
@@ -29,12 +33,23 @@
 
         <h1>Project Manager</h1>
 
-        <div>
-            <span>Welcome, {{ username }}</span>
+        <div class="navbar-right">
 
-            <a href="{{ url_for('logout') }}">
+            <span class="navbar-username">
+                Welcome, {{ username }}
+            </span>
+        
+            <a href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+        
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-link"
+            >
                 Logout
             </a>
+        
         </div>
 
     </nav>
@@ -42,211 +57,336 @@
 
     <main class="dashboard">
 
-        <a href="{{ url_for('dashboard') }}">
-            ← Back to Dashboard
-        </a>
+        <!-- PROJECT HEADER -->
 
-        <h2>{{ project["name"] }}</h2>
+        <div class="project-header">
 
-        <p>
-            {{ project["description"] }}
-        </p>
+            <a href="{{ url_for('dashboard') }}">
+                ← Back to Dashboard
+            </a>
 
-        <small>
-            Created: {{ project["created_at"] }}
-        </small>
+            <h2>
+                {{ project["name"] }}
+            </h2>
 
-        <hr>
+            <p>
+                {{ project["description"] }}
+            </p>
 
-        <h2>Tasks</h2>
-        
+            <small>
+                Created: {{ project["created_at"] }}
+            </small>
+
+
+            <div class="project-actions">
+
+                <a href="{{ url_for(
+                    'edit_project',
+                    project_id=project['id']
+                ) }}">
+
+                    <button type="button">
+                        Edit Project
+                    </button>
+
+                </a>
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'delete_project',
+                        project_id=project['id']
+                    ) }}"
+                >
+
+                    <button
+                        type="submit"
+                        class="delete-button"
+                        onclick="return confirm(
+                            'Are you sure you want to delete this project?'
+                        );"
+                    >
+                        Delete Project
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- TASK HEADER -->
+
+        <div class="task-header">
+
+            <div>
+
+                <h2>Tasks</h2>
+
+                <p>
+                    Manage the tasks for this project.
+                </p>
+
+            </div>
+
+            <a href="{{ url_for(
+                'create_task',
+                project_id=project['id']
+            ) }}">
+
+                <button type="button">
+                    + New Task
+                </button>
+
+            </a>
+
+        </div>
+
+
+        <!-- TASK COUNTS -->
+
         <div class="task-counts">
 
             <span>
-                Total: {{ task_counts["total"] }}
+                Total:
+                <strong>{{ task_counts["total"] }}</strong>
             </span>
-        
+
             <span>
-                Pending: {{ task_counts["pending"] }}
+                Pending:
+                <strong>{{ task_counts["pending"] }}</strong>
             </span>
-        
+
             <span>
-                In Progress: {{ task_counts["in_progress"] }}
+                In Progress:
+                <strong>{{ task_counts["in_progress"] }}</strong>
             </span>
-        
+
             <span>
-                Completed: {{ task_counts["completed"] }}
+                Completed:
+                <strong>{{ task_counts["completed"] }}</strong>
             </span>
-        
+
         </div>
-        
+
+
+        <!-- FILTERS -->
+
         <div class="task-filters">
 
-            <p>Status:</p>
-        
-            <a href="{{ url_for(
-                'project',
-                project_id=project['id']
-            ) }}">
-                <button type="button">All</button>
-            </a>
-        
-            <a href="{{ url_for(
-                'project',
-                project_id=project['id'],
-                status='Pending',
-                priority=request.args.get('priority')
-            ) }}">
-                <button type="button">Pending</button>
-            </a>
-        
-            <a href="{{ url_for(
-                'project',
-                project_id=project['id'],
-                status='In Progress',
-                priority=request.args.get('priority')
-            ) }}">
-                <button type="button">In Progress</button>
-            </a>
-        
-            <a href="{{ url_for(
-                'project',
-                project_id=project['id'],
-                status='Completed',
-                priority=request.args.get('priority')
-            ) }}">
-                <button type="button">Completed</button>
-            </a>
-        
-        
-            <p>Priority:</p>
-        
-            <a href="{{ url_for(
-                'project',
-                project_id=project['id'],
-                status=request.args.get('status')
-            ) }}">
-                <button type="button">All</button>
-            </a>
-        
-            <a href="{{ url_for(
-                'project',
-                project_id=project['id'],
-                status=request.args.get('status'),
-                priority='Low'
-            ) }}">
-                <button type="button">Low</button>
-            </a>
-        
-            <a href="{{ url_for(
-                'project',
-                project_id=project['id'],
-                status=request.args.get('status'),
-                priority='Medium'
-            ) }}">
-                <button type="button">Medium</button>
-            </a>
-        
-            <a href="{{ url_for(
-                'project',
-                project_id=project['id'],
-                status=request.args.get('status'),
-                priority='High'
-            ) }}">
-                <button type="button">High</button>
-            </a>
-        
+            <div class="filter-group">
+
+                <strong>Status</strong>
+
+                <a href="{{ url_for(
+                    'project',
+                    project_id=project['id'],
+                    priority=request.args.get('priority')
+                ) }}">
+                    <button type="button">
+                        All
+                    </button>
+                </a>
+
+                <a href="{{ url_for(
+                    'project',
+                    project_id=project['id'],
+                    status='Pending',
+                    priority=request.args.get('priority')
+                ) }}">
+                    <button type="button">
+                        Pending
+                    </button>
+                </a>
+
+                <a href="{{ url_for(
+                    'project',
+                    project_id=project['id'],
+                    status='In Progress',
+                    priority=request.args.get('priority')
+                ) }}">
+                    <button type="button">
+                        In Progress
+                    </button>
+                </a>
+
+                <a href="{{ url_for(
+                    'project',
+                    project_id=project['id'],
+                    status='Completed',
+                    priority=request.args.get('priority')
+                ) }}">
+                    <button type="button">
+                        Completed
+                    </button>
+                </a>
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <strong>Priority</strong>
+
+                <a href="{{ url_for(
+                    'project',
+                    project_id=project['id'],
+                    status=request.args.get('status')
+                ) }}">
+                    <button type="button">
+                        All
+                    </button>
+                </a>
+
+                <a href="{{ url_for(
+                    'project',
+                    project_id=project['id'],
+                    status=request.args.get('status'),
+                    priority='Low'
+                ) }}">
+                    <button type="button">
+                        Low
+                    </button>
+                </a>
+
+                <a href="{{ url_for(
+                    'project',
+                    project_id=project['id'],
+                    status=request.args.get('status'),
+                    priority='Medium'
+                ) }}">
+                    <button type="button">
+                        Medium
+                    </button>
+                </a>
+
+                <a href="{{ url_for(
+                    'project',
+                    project_id=project['id'],
+                    status=request.args.get('status'),
+                    priority='High'
+                ) }}">
+                    <button type="button">
+                        High
+                    </button>
+                </a>
+
+            </div>
+
         </div>
 
-        <a href="{{ url_for('create_task', project_id=project['id']) }}">
-            <button>Create Task</button>
-        </a>
 
+        <!-- TASK LIST -->
 
         <div class="task-list">
 
             {% if tasks %}
 
-            {% for task in tasks %}
+                {% for task in tasks %}
 
-            <div class="task-card">
+                    <div class="task-card">
 
-                <h3>{{ task["title"] }}</h3>
-            
-                <p>{{ task["description"] }}</p>
-            
-                <div class="task-meta">
+                        <div class="task-card-header">
 
-                    <span class="status-badge">
-                        {{ task["status"] }}
-                    </span>
-                
-                    <span class="priority-badge">
-                        {{ task["priority"] }} Priority
-                    </span>
-                
-                </div>
-            
-                <small>
-                    Created: {{ task["created_at"] }}
-                </small>
-            
-                <br>
-            
-                <a href="{{ url_for(
-                    'edit_task',
-                    project_id=project['id'],
-                    task_id=task['id']
-                ) }}">
-                    <button>Edit Task</button>
-                </a>
-            
-                <form
-                    method="POST"
-                    action="{{ url_for(
-                        'delete_task',
-                        project_id=project['id'],
-                        task_id=task['id']
-                    ) }}"
-                    style="display: inline;"
-                >
-            
-                    <button
-                        type="submit"
-                        onclick="return confirm('Are you sure you want to delete this task?');"
-                    >
-                        Delete Task
-                    </button>
-            
-                </form>
-            
-            </div>
+                            <h3>
+                                {{ task["title"] }}
+                            </h3>
 
-            {% endfor %}
+                            <div class="task-badges">
+
+                                <span class="status-badge">
+                                    {{ task["status"] }}
+                                </span>
+
+                                <span class="priority-badge">
+                                    {{ task["priority"] }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <p>
+                            {{ task["description"] }}
+                        </p>
+
+
+                        <small>
+                            Created: {{ task["created_at"] }}
+                        </small>
+
+
+                        <div class="task-actions">
+
+                            <a href="{{ url_for(
+                                'edit_task',
+                                project_id=project['id'],
+                                task_id=task['id']
+                            ) }}">
+
+                                <button type="button">
+                                    Edit Task
+                                </button>
+
+                            </a>
+
+
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'delete_task',
+                                    project_id=project['id'],
+                                    task_id=task['id']
+                                ) }}"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="delete-button"
+                                    onclick="return confirm(
+                                        'Are you sure you want to delete this task?'
+                                    );"
+                                >
+                                    Delete Task
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
 
             {% else %}
 
-            <p>No tasks yet.</p>
+                <div class="empty-state">
+
+                    <h3>No tasks found</h3>
+
+                    <p>
+                        There are no tasks matching your filters.
+                    </p>
+
+                    <a href="{{ url_for(
+                        'create_task',
+                        project_id=project['id']
+                    ) }}">
+
+                        <button type="button">
+                            + Create Task
+                        </button>
+
+                    </a>
+
+                </div>
 
             {% endif %}
 
         </div>
-
-        <a href="{{ url_for('edit_project', project_id=project['id']) }}">
-            <button>Edit Project</button>
-        </a>
-
-        <form method="POST" action="{{ url_for('delete_project', project_id=project['id']) }}">
-
-            <button type="submit" onclick="return confirm('Are you sure you want to delete this project?');">
-                Delete Project
-            </button>
-
-            <a href="{{ url_for('create_task', project_id=project['id']) }}">
-                <button>Create Task</button>
-            </a>
-
-
 
     </main>
 

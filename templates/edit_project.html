@@ -25,9 +25,24 @@
     <nav class="navbar">
         <h1>Project Manager</h1>
 
-        <a href="{{ url_for('dashboard') }}">
-            Dashboard
-        </a>
+        <div class="navbar-right">
+
+            <span class="navbar-username">
+                Welcome, {{ username }}
+            </span>
+        
+            <a href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+        
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-link"
+            >
+                Logout
+            </a>
+        
+        </div>
     </nav>
 
 
