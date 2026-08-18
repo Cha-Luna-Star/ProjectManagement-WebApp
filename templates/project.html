@@ -179,100 +179,189 @@
             <div class="filter-group">
 
                 <strong>Status</strong>
-
+            
                 <a href="{{ url_for(
                     'project',
                     project_id=project['id'],
                     priority=request.args.get('priority')
                 ) }}">
-                    <button type="button">
+                    <button
+                        type="button"
+                        class="{% if not request.args.get('status') %}active{% endif %}"
+                    >
                         All
                     </button>
                 </a>
-
+            
                 <a href="{{ url_for(
                     'project',
                     project_id=project['id'],
                     status='Pending',
                     priority=request.args.get('priority')
                 ) }}">
-                    <button type="button">
+                    <button
+                        type="button"
+                        class="{% if request.args.get('status') == 'Pending' %}active{% endif %}"
+                    >
                         Pending
                     </button>
                 </a>
-
+            
                 <a href="{{ url_for(
                     'project',
                     project_id=project['id'],
                     status='In Progress',
                     priority=request.args.get('priority')
                 ) }}">
-                    <button type="button">
+                    <button
+                        type="button"
+                        class="{% if request.args.get('status') == 'In Progress' %}active{% endif %}"
+                    >
                         In Progress
                     </button>
                 </a>
-
+            
                 <a href="{{ url_for(
                     'project',
                     project_id=project['id'],
                     status='Completed',
                     priority=request.args.get('priority')
                 ) }}">
-                    <button type="button">
+                    <button
+                        type="button"
+                        class="{% if request.args.get('status') == 'Completed' %}active{% endif %}"
+                    >
                         Completed
                     </button>
                 </a>
+                
+                <div class="filter-group">
 
-            </div>
-
-
-            <div class="filter-group">
-
-                <strong>Priority</strong>
-
-                <a href="{{ url_for(
-                    'project',
-                    project_id=project['id'],
-                    status=request.args.get('status')
-                ) }}">
-                    <button type="button">
-                        All
-                    </button>
-                </a>
-
-                <a href="{{ url_for(
-                    'project',
-                    project_id=project['id'],
-                    status=request.args.get('status'),
-                    priority='Low'
-                ) }}">
-                    <button type="button">
-                        Low
-                    </button>
-                </a>
-
-                <a href="{{ url_for(
-                    'project',
-                    project_id=project['id'],
-                    status=request.args.get('status'),
-                    priority='Medium'
-                ) }}">
-                    <button type="button">
-                        Medium
-                    </button>
-                </a>
-
-                <a href="{{ url_for(
-                    'project',
-                    project_id=project['id'],
-                    status=request.args.get('status'),
-                    priority='High'
-                ) }}">
-                    <button type="button">
-                        High
-                    </button>
-                </a>
-
+                    <strong>Priority</strong>
+                    
+                    <a href="{{ url_for(
+                        'project',
+                        project_id=project['id'],
+                        status=request.args.get('status')
+                    ) }}">
+                        <button
+                            type="button"
+                            class="{% if not request.args.get('priority') %}active{% endif %}"
+                        >
+                            All
+                        </button>
+                    </a>
+                
+                    <a href="{{ url_for(
+                        'project',
+                        project_id=project['id'],
+                        status=request.args.get('status'),
+                        priority='Low'
+                    ) }}">
+                        <button
+                            type="button"
+                            class="{% if request.args.get('priority') == 'Low' %}active{% endif %}"
+                        >
+                            Low
+                        </button>
+                    </a>
+                
+                    <a href="{{ url_for(
+                        'project',
+                        project_id=project['id'],
+                        status=request.args.get('status'),
+                        priority='Medium'
+                    ) }}">
+                        <button
+                            type="button"
+                            class="{% if request.args.get('priority') == 'Medium' %}active{% endif %}"
+                        >
+                            Medium
+                        </button>
+                    </a>
+                
+                    <a href="{{ url_for(
+                        'project',
+                        project_id=project['id'],
+                        status=request.args.get('status'),
+                        priority='High'
+                    ) }}">
+                        <button
+                            type="button"
+                            class="{% if request.args.get('priority') == 'High' %}active{% endif %}"
+                        >
+                            High
+                        </button>
+                    </a>
+                    
+                    <strong>Sort By</strong>
+                
+                    <a href="{{ url_for(
+                        'project',
+                        project_id=project['id'],
+                        status=request.args.get('status'),
+                        priority=request.args.get('priority'),
+                        sort='newest'
+                    ) }}">
+                        <button
+                            type="button"
+                            class="{% if request.args.get('sort', 'newest') == 'newest' %}active{% endif %}"
+                        >
+                            Newest
+                        </button>
+                    </a>
+                
+                    <a href="{{ url_for(
+                        'project',
+                        project_id=project['id'],
+                        status=request.args.get('status'),
+                        priority=request.args.get('priority'),
+                        sort='oldest'
+                    ) }}">
+                        <button
+                            type="button"
+                            class="{% if request.args.get('sort') == 'oldest' %}active{% endif %}"
+                        >
+                            Oldest
+                        </button>
+                    </a>
+                
+                    <a href="{{ url_for(
+                        'project',
+                        project_id=project['id'],
+                        status=request.args.get('status'),
+                        priority=request.args.get('priority'),
+                        sort='priority'
+                    ) }}">
+                        <button
+                            type="button"
+                            class="{% if request.args.get('sort') == 'priority' %}active{% endif %}"
+                        >
+                            Priority
+                        </button>
+                    </a>
+                
+                    <a href="{{ url_for(
+                        'project',
+                        project_id=project['id'],
+                        status=request.args.get('status'),
+                        priority=request.args.get('priority'),
+                        sort='status'
+                    ) }}">
+                        <button
+                            type="button"
+                            class="{% if request.args.get('sort') == 'status' %}active{% endif %}"
+                        >
+                            Status
+                        </button>
+                    </a>
+                    <a
+                        href="{{ url_for('project', project_id=project['id']) }}"
+                        class="clear-filters"
+                    >
+                        ✕ Clear All Filters
+                    </a>
+                </div>
             </div>
 
         </div>
@@ -296,11 +385,11 @@
 
                             <div class="task-badges">
 
-                                <span class="status-badge">
+                                <span class="status-badge status-{{ task['status'] | lower | replace(' ', '-') }}">
                                     {{ task["status"] }}
                                 </span>
 
-                                <span class="priority-badge">
+                                <span class="priority-badge priority-{{ task['priority'] | lower }}">
                                     {{ task["priority"] }}
                                 </span>
 

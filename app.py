@@ -211,12 +211,60 @@ def project(project_id):
 
     else:
 
-        tasks = connection.execute("""
+        status = request.args.get("status")
+        priority = request.args.get("priority")
+        sort = request.args.get("sort", "newest")
+
+        query = """
             SELECT *
             FROM tasks
             WHERE project_id = ?
-            ORDER BY created_at DESC
-        """, (project_id,)).fetchall()
+        """
+
+        params = [project_id]
+
+        if status:
+            query += " AND status = ?"
+            params.append(status)
+
+        if priority:
+            query += " AND priority = ?"
+            params.append(priority)
+
+
+        if sort == "oldest":
+            query += " ORDER BY created_at ASC"
+
+        elif sort == "priority":
+            query += """
+                ORDER BY
+                CASE priority
+                    WHEN 'High' THEN 1
+                    WHEN 'Medium' THEN 2
+                    WHEN 'Low' THEN 3
+                    ELSE 4
+                END
+            """
+
+        elif sort == "status":
+            query += """
+                ORDER BY
+                CASE status
+                    WHEN 'Pending' THEN 1
+                    WHEN 'In Progress' THEN 2
+                    WHEN 'Completed' THEN 3
+                    ELSE 4
+                END
+            """
+
+        else:
+            query += " ORDER BY created_at DESC"
+
+
+        tasks = connection.execute(
+            query,
+            params
+        ).fetchall()
     connection.close()
 
     return render_template(
