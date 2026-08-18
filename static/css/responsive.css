@@ -56,3 +56,54 @@
     }
 
 }
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 500px) {
+
+    .auth-page {
+        padding: 20px 15px;
+    }
+
+    .auth-card {
+        padding: 30px 25px;
+    }
+
+    .auth-card h2 {
+        font-size: 24px;
+    }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+    .task-card-header {
+        flex-direction: column;
+    }
+
+    .task-badges {
+        margin-top: 5px;
+    }
+
+    .task-actions {
+        flex-direction: column;
+    }
+
+    .task-actions a,
+    .task-actions button {
+        width: 100%;
+    }
+
+    .task-counts {
+        flex-direction: column;
+    }
+
+    .task-counts span {
+        width: 100%;
+    }
+}

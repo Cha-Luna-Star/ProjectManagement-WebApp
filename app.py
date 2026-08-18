@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from database import init_db, get_db
 from utils import hash_password
+from datetime import date, timedelta
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key"
@@ -27,8 +28,7 @@ def login():
             session["user_id"] = user["id"]
             session["username"] = user["username"]\
             
-        return redirect(url_for("dashboard"))
-
+        return redirect(url_for("dashboard"))    
     return render_template("login.html")
 
 @app.route("/dashboard")
@@ -77,25 +77,6 @@ def dashboard():
         username=session["username"],
         projects=projects,
         stats=stats
-    )
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    connection = get_db()
-    
-    projects = connection.execute("""
-            SELECT *
-            FROM projects
-            WHERE user_id = ?
-            ORDER BY created_at DESC
-    """, (session["user_id"],)).fetchall()
-    
-    connection.close()
-    
-    return render_template(
-        "dashboard.html",
-        username=session["username"],
-        projects = projects
     )
     
 @app.route("/register", methods=["GET", "POST"])
@@ -191,6 +172,147 @@ def project(project_id):
         WHERE project_id = ?
     """, (project_id,)).fetchone()
 
+    # Get tasks
+    tasks = connection.execute("""
+        SELECT *
+        FROM tasks
+        WHERE project_id = ?
+        ORDER BY created_at DESC
+    """, (project_id,)).fetchall()
+
+    # Due date status
+    today = date.today()
+    soon = today + timedelta(days=3)
+
+    tasks = [dict(task) for task in tasks]
+
+    for task in tasks:
+
+        task["due_status"] = "none"
+
+        if task["due_date"] and task["status"] != "Completed":
+
+            due_date = date.fromisoformat(task["due_date"])
+
+            if due_date < today:
+                task["due_status"] = "overdue"
+
+            elif due_date <= soon:
+                task["due_status"] = "soon"
+
+            else:
+                task["due_status"] = "normal"
+
+    connection.close()
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (project_id, session["user_id"])).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    # Get task counts
+    task_counts = connection.execute("""
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) AS pending,
+            SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress,
+            SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed
+        FROM tasks
+        WHERE project_id = ?
+    """, (project_id,)).fetchone()
+
+    # Get tasks
+    tasks = connection.execute("""
+        SELECT *
+        FROM tasks
+        WHERE project_id = ?
+        ORDER BY created_at DESC
+    """, (project_id,)).fetchall()
+
+    # Due date status
+    today = date.today()
+    soon = today + timedelta(days=3)
+
+    tasks = [dict(task) for task in tasks]
+
+    for task in tasks:
+
+        task["due_status"] = "none"
+
+        if task["due_date"] and task["status"] != "Completed":
+
+            due_date = date.fromisoformat(task["due_date"])
+
+            if due_date < today:
+                task["due_status"] = "overdue"
+
+            elif due_date <= soon:
+                task["due_status"] = "soon"
+
+            else:
+                task["due_status"] = "normal"
+
+    connection.close()
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (project_id, session["user_id"])).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    tasks = connection.execute("""
+        SELECT *
+        FROM tasks
+        WHERE project_id = ?
+        ORDER BY created_at DESC
+    """, (project_id,)).fetchall()
+
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (project_id, session["user_id"])).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    # Get task counts
+    task_counts = connection.execute("""
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) AS pending,
+            SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress,
+            SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed
+        FROM tasks
+        WHERE project_id = ?
+    """, (project_id,)).fetchone()
+
     # Get selected status from URL
     status = request.args.get("status")
     priority = request.args.get("priority")
@@ -220,14 +342,35 @@ def project(project_id):
 
     connection.close()
 
-    return render_template(
-        "project.html",
-        project=project,
-        tasks=tasks,
-        task_counts=task_counts,
-        username=session["username"]
-    )
+    # -------------------------
+    # DUE DATE STATUS
+    # -------------------------
 
+    today = date.today()
+    soon = today + timedelta(days=3)
+
+    tasks = [dict(task) for task in tasks]
+
+    for task in tasks:
+
+        task["due_status"] = "none"
+
+        if task["due_date"] and task["status"] != "Completed":
+
+            due_date = date.fromisoformat(task["due_date"])
+
+            if due_date < today:
+                task["due_status"] = "overdue"
+
+            elif due_date <= soon:
+                task["due_status"] = "soon"
+
+            else:
+                task["due_status"] = "normal"
+
+
+    connection.close()
+    
     if "user_id" not in session:
         return redirect(url_for("login"))
 
@@ -312,12 +455,6 @@ def project(project_id):
         ).fetchall()
     connection.close()
 
-    return render_template(
-        "project.html",
-        project=project,
-        tasks=tasks,
-        username=session["username"]
-    )
 
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -338,8 +475,11 @@ def project(project_id):
     return render_template(
         "project.html",
         project=project,
+        tasks=tasks,
+        task_counts=task_counts,
         username=session["username"]
     )
+    
     
 @app.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
 def edit_project(project_id):
@@ -384,11 +524,6 @@ def edit_project(project_id):
         ))
 
     connection.close()
-
-    return render_template(
-        "edit_project.html",
-        project=project
-    )
 
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -540,19 +675,26 @@ def edit_task(project_id, task_id):
         description = request.form["description"]
         status = request.form["status"]
         priority = request.form["priority"]
+        due_date = request.form["due_date"]
 
 
         connection.execute("""
             UPDATE tasks
-            SET title = ?, description = ?, status = ?, priority = ?
-            WHERE id = ? AND project_id = ?
+            SET title = ?,
+                description = ?,
+                status = ?,
+                priority = ?,
+                due_date = ?
+            WHERE id = ?
+            AND project_id = ?
         """, (
             title,
             description,
             status,
             priority,
+            due_date,
             task_id,
-            project_id,
+            project_id
         ))
 
         connection.commit()

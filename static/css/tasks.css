@@ -265,34 +265,32 @@
     color: #b91c1c;
 }
 
-/* =========================
-   MOBILE
-========================= */
+.task-due-date {
+    margin-top: 10px;
 
-@media (max-width: 700px) {
+    color: #6b7280 !important;
 
-    .task-card-header {
-        flex-direction: column;
-    }
+    font-size: 14px;
 
-    .task-badges {
-        margin-top: 5px;
-    }
+    font-weight: 600;
+}
 
-    .task-actions {
-        flex-direction: column;
-    }
+.task-due-date {
+    margin-top: 10px;
 
-    .task-actions a,
-    .task-actions button {
-        width: 100%;
-    }
+    font-size: 14px;
 
-    .task-counts {
-        flex-direction: column;
-    }
+    font-weight: 600;
+}
 
-    .task-counts span {
-        width: 100%;
-    }
+.due-normal {
+    color: #6b7280 !important;
+}
+
+.due-soon {
+    color: #d97706 !important;
+}
+
+.due-overdue {
+    color: #dc2626 !important;
 }

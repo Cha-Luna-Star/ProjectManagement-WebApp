@@ -88,6 +88,21 @@
                 >{{ task['description'] }}</textarea>
 
             </div>
+            
+            <div>
+
+                <label for="due_date">
+                    Due Date
+                </label>
+            
+                <input
+                    type="date"
+                    id="due_date"
+                    name="due_date"
+                    value="{{ task['due_date'] or '' }}"
+                >
+            
+            </div>
 
             <div>
 

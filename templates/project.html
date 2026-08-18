@@ -376,6 +376,28 @@
                 {% for task in tasks %}
 
                     <div class="task-card">
+                        
+                        {% if task["due_date"] %}
+
+                            <p class="task-due-date due-{{ task['due_status'] }}">
+
+                                {% if task["due_status"] == "overdue" %}
+
+                                    ⚠ Overdue: {{ task["due_date"] }}
+
+                                {% elif task["due_status"] == "soon" %}
+
+                                    ⏰ Due soon: {{ task["due_date"] }}
+
+                                {% else %}
+                                
+                                    Due: {{ task["due_date"] }}
+
+                                {% endif %}
+
+                            </p>
+
+                        {% endif %}
 
                         <div class="task-card-header">
 

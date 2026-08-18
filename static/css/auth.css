@@ -208,21 +208,3 @@
 }
 
 
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 500px) {
-
-    .auth-page {
-        padding: 20px 15px;
-    }
-
-    .auth-card {
-        padding: 30px 25px;
-    }
-
-    .auth-card h2 {
-        font-size: 24px;
-    }
-}
