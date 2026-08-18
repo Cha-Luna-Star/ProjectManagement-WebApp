@@ -70,6 +70,84 @@
 
         </div>
 
+        <div class="dashboard-stats">
+
+            <div class="stat-card">
+        
+                <div class="stat-icon">
+                    📁
+                </div>
+        
+                <div>
+        
+                    <p>Projects</p>
+        
+                    <h3>
+                        {{ stats["total_projects"] }}
+                    </h3>
+        
+                </div>
+        
+            </div>
+        
+        
+            <div class="stat-card">
+        
+                <div class="stat-icon">
+                    📝
+                </div>
+        
+                <div>
+        
+                    <p>Total Tasks</p>
+        
+                    <h3>
+                        {{ stats["total_tasks"] }}
+                    </h3>
+        
+                </div>
+        
+            </div>
+        
+        
+            <div class="stat-card">
+        
+                <div class="stat-icon">
+                    ✅
+                </div>
+        
+                <div>
+        
+                    <p>Completed</p>
+        
+                    <h3>
+                        {{ stats["completed_tasks"] or 0 }}
+                    </h3>
+        
+                </div>
+        
+            </div>
+        
+        
+            <div class="stat-card">
+        
+                <div class="stat-icon">
+                    ⌛
+                </div>
+        
+                <div>
+        
+                    <p>Pending</p>
+        
+                    <h3>
+                        {{ stats["pending_tasks"] or 0 }}
+                    </h3>
+        
+                </div>
+        
+            </div>
+        
+        </div>
 
         <div class="project-list">
 

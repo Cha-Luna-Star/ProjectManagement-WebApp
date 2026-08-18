@@ -33,6 +33,51 @@ def login():
 
 @app.route("/dashboard")
 def dashboard():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    projects = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+    """, (session["user_id"],)).fetchall()
+
+    stats = connection.execute("""
+        SELECT
+            COUNT(DISTINCT projects.id) AS total_projects,
+            COUNT(tasks.id) AS total_tasks,
+            SUM(
+                CASE
+                    WHEN tasks.status = 'Completed'
+                    THEN 1
+                    ELSE 0
+                END
+            ) AS completed_tasks,
+            SUM(
+                CASE
+                    WHEN tasks.status = 'Pending'
+                    THEN 1
+                    ELSE 0
+                END
+            ) AS pending_tasks
+        FROM projects
+        LEFT JOIN tasks
+            ON projects.id = tasks.project_id
+        WHERE projects.user_id = ?
+    """, (session["user_id"],)).fetchone()
+
+    connection.close()
+
+    return render_template(
+        "dashboard.html",
+        username=session["username"],
+        projects=projects,
+        stats=stats
+    )
     if "user_id" not in session:
         return redirect(url_for("login"))
 
@@ -430,16 +475,22 @@ def create_task(project_id):
 
         title = request.form["title"]
         description = request.form["description"]
+        due_date = request.form["due_date"]
         priority = request.form["priority"]
 
         connection.execute("""
-            INSERT INTO tasks (project_id, title, description, priority)
+            INSERT INTO tasks (
+                project_id,
+                title,
+                description,
+                due_date
+            )
             VALUES (?, ?, ?, ?)
         """, (
             project_id,
             title,
             description,
-            priority
+            due_date
         ))
         connection.commit()
         connection.close()

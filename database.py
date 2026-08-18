@@ -42,6 +42,14 @@ def init_db():
         )
     """)
         
-        
+    try:
+        connection.execute("""
+            ALTER TABLE tasks
+            ADD COLUMN due_date TEXT
+        """)
+    except sqlite3.OperationalError:
+        pass
+
     connection.commit()
-    connection.close()
+    connection.close()    
+    

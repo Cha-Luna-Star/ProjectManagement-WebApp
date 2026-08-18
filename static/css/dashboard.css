@@ -105,3 +105,70 @@
 
     margin-bottom: 20px;
 }
+
+/* =========================
+   DASHBOARD STATISTICS
+========================= */
+
+.dashboard-stats {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 16px;
+
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 20px;
+
+    background: white;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: #eff6ff;
+
+    color: #2563eb;
+
+    font-size: 20px;
+
+    flex-shrink: 0;
+}
+
+.stat-card p {
+    margin: 0 0 4px;
+
+    color: #6b7280;
+
+    font-size: 13px;
+}
+
+.stat-card h3 {
+    margin: 0;
+
+    font-size: 24px;
+
+    color: #111827;
+}
