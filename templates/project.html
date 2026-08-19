@@ -192,6 +192,27 @@
         </div>
 
 
+        <form
+            method="GET"
+            action="{{ url_for(
+                'project',
+                project_id=project['id']
+            ) }}"
+            class="task-search"
+        >
+
+            <input
+                type="search"
+                name="search"
+                placeholder="Search tasks..."
+                value="{{ request.args.get('search', '') }}"
+            >
+
+            <button type="submit">
+                Search
+            </button>
+
+        </form>
         <!-- FILTERS -->
 
         <div class="task-filters">

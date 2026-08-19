@@ -170,6 +170,11 @@ def create_project():
 @app.route("/projects/<int:project_id>")
 def project(project_id):
 
+    search = request.args.get("search", "").strip()
+    status = request.args.get("status")
+    priority = request.args.get("priority")
+    sort = request.args.get("sort", "newest")
+    
     if "user_id" not in session:
         return redirect(url_for("login"))
 
@@ -197,12 +202,84 @@ def project(project_id):
     """, (project_id,)).fetchone()
 
     # Get tasks
-    tasks = connection.execute("""
+    query = """
         SELECT *
         FROM tasks
         WHERE project_id = ?
-        ORDER BY created_at DESC
-    """, (project_id,)).fetchall()
+    """
+
+    params = [project_id]
+
+    if search:
+        query += """
+            AND (
+                title LIKE ?
+                OR description LIKE ?
+            )
+        """
+
+        search_term = f"%{search}%"
+
+        params.extend([
+            search_term,
+            search_term
+        ])
+
+    if status:
+        query += " AND status = ?"
+        params.append(status)
+
+    if priority:
+        query += " AND priority = ?"
+        params.append(priority)
+
+    if sort == "oldest":
+        query += " ORDER BY created_at ASC"
+
+    elif sort == "priority":
+        query += """
+            ORDER BY
+            CASE priority
+                WHEN 'High' THEN 1
+                WHEN 'Medium' THEN 2
+                WHEN 'Low' THEN 3
+                ELSE 4
+            END
+        """
+
+    elif sort == "status":
+        query += """
+            ORDER BY
+            CASE status
+                WHEN 'Pending' THEN 1
+                WHEN 'In Progress' THEN 2
+                WHEN 'Completed' THEN 3
+                ELSE 4
+            END
+        """
+
+    else:
+        query += " ORDER BY created_at DESC"
+
+    tasks = connection.execute(
+        query,
+        params
+    ).fetchall()
+
+    if search:
+        query += """
+            AND (
+                title LIKE ?
+                OR description LIKE ?
+            )
+        """
+
+        search_term = f"%{search}%"
+
+        params.extend([
+            search_term,
+            search_term
+        ])
 
     # Due date status
     today = date.today()

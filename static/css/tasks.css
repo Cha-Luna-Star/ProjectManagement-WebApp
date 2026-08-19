@@ -302,3 +302,49 @@
 .complete-button:hover {
     background: #15803d;
 }
+
+.task-search {
+    display: flex;
+
+    gap: 8px;
+
+    margin-bottom: 20px;
+}
+
+.task-search input {
+    flex: 1;
+
+    padding: 10px 12px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 6px;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+.task-search input:focus {
+    border-color: #2563eb;
+}
+
+.task-search button {
+    padding: 10px 16px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.task-search button:hover {
+    background: #1d4ed8;
+}
