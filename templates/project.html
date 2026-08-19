@@ -432,6 +432,27 @@
 
                         <div class="task-actions">
 
+                            {% if task["status"] != "Completed" %}
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'complete_task',
+                                        project_id=project['id'],
+                                        task_id=task['id']
+                                    ) }}"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="complete-button"
+                                    >
+                                        Mark Complete
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
                             <a href="{{ url_for(
                                 'edit_task',
                                 project_id=project['id'],

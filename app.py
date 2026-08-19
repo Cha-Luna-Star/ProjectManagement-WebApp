@@ -40,12 +40,36 @@ def dashboard():
     connection = get_db()
 
     projects = connection.execute("""
-        SELECT *
+        SELECT
+            projects.*,
+            COUNT(tasks.id) AS total_tasks,
+            SUM(
+                CASE
+                    WHEN tasks.status = 'Completed'
+                    THEN 1
+                    ELSE 0
+                END
+            ) AS completed_tasks
         FROM projects
-        WHERE user_id = ?
-        ORDER BY created_at DESC
+        LEFT JOIN tasks
+            ON projects.id = tasks.project_id
+        WHERE projects.user_id = ?
+        GROUP BY projects.id
+        ORDER BY projects.created_at DESC
     """, (session["user_id"],)).fetchall()
 
+    projects = [dict(project) for project in projects]
+
+    for project in projects:
+
+        total_tasks = project["total_tasks"] or 0
+        completed_tasks = project["completed_tasks"] or 0
+
+        if total_tasks > 0:
+            project["progress"] = (completed_tasks / total_tasks) * 100
+        else:
+            project["progress"] = 0
+            
     stats = connection.execute("""
         SELECT
             COUNT(DISTINCT projects.id) AS total_projects,
@@ -478,8 +502,7 @@ def project(project_id):
         tasks=tasks,
         task_counts=task_counts,
         username=session["username"]
-    )
-    
+    )   
     
 @app.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
 def edit_project(project_id):
@@ -713,6 +736,53 @@ def edit_task(project_id, task_id):
         project_id=project_id
     )
 
+@app.route(
+    "/projects/<int:project_id>/tasks/<int:task_id>/complete",
+    methods=["POST"]
+)
+def complete_task(project_id, task_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    task = connection.execute("""
+        SELECT tasks.id
+        FROM tasks
+        JOIN projects
+            ON tasks.project_id = projects.id
+        WHERE tasks.id = ?
+          AND tasks.project_id = ?
+          AND projects.user_id = ?
+    """, (
+        task_id,
+        project_id,
+        session["user_id"]
+    )).fetchone()
+
+    if task is None:
+        connection.close()
+        return "Task not found", 404
+
+    connection.execute("""
+        UPDATE tasks
+        SET status = 'Completed'
+        WHERE id = ?
+          AND project_id = ?
+    """, (
+        task_id,
+        project_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+    return redirect(url_for(
+        "project",
+        project_id=project_id
+    ))
+    
 @app.route("/projects/<int:project_id>/tasks/<int:task_id>/delete", methods=["POST"])
 def delete_task(project_id, task_id):
 

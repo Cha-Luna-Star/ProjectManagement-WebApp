@@ -172,10 +172,36 @@
                                 {{ project["description"] }}
                             </p>
 
+                            <div class="project-progress">
+
+                                <div class="progress-header">
+                            
+                                    <span>Progress</span>
+                            
+                                    <span>
+                                        {{ project["completed_tasks"] or 0 }}
+                                        /
+                                        {{ project["total_tasks"] or 0 }}
+                                        tasks
+                                    </span>
+                            
+                                </div>
+                            
+                                <div class="progress-bar">
+                            
+                                    <div
+                                        class="progress-fill"
+                                        style="width: {{ project['progress'] }}%;"
+                                    ></div>
+                            
+                                </div>
+                            
+                            </div>
+                            
                             <small>
                                 Created: {{ project["created_at"] }}
                             </small>
-
+                            
                         </div>
 
                         <a href="{{ url_for(

@@ -294,3 +294,11 @@
 .due-overdue {
     color: #dc2626 !important;
 }
+
+.complete-button {
+    background: #16a34a;
+}
+
+.complete-button:hover {
+    background: #15803d;
+}
