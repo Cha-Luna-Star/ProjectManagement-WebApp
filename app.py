@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from database import init_db, get_db
 from utils import hash_password
 from datetime import date, timedelta
@@ -159,13 +159,13 @@ def create_project():
             name,
             description
         ))
-        
+    
         connection.commit()
         connection.close()
-        
+
+        flash("Project created successfully!", "success")
+
         return redirect(url_for("dashboard"))
-    
-    return render_template("create_project.html")
 
 @app.route("/projects/<int:project_id>")
 def project(project_id):
@@ -541,6 +541,8 @@ def edit_project(project_id):
         connection.commit()
         connection.close()
 
+        flash("Project updated successfully!", "success")
+
         return redirect(url_for(
             "project",
             project_id=project_id
@@ -608,8 +610,10 @@ def delete_project(project_id):
     
     connection.commit()
     connection.close()
-    
-    return render_template(url_for("dashboard"))
+
+    flash("Project deleted successfully!", "success")
+
+    return redirect(url_for("dashboard"))
 
 @app.route("/projects/<int:project_id>/tasks/create", methods=["GET", "POST"])
 def create_task(project_id):
@@ -652,6 +656,8 @@ def create_task(project_id):
         ))
         connection.commit()
         connection.close()
+
+        flash("Task created successfully!", "success")
 
         return redirect(url_for(
             "project",
@@ -719,9 +725,10 @@ def edit_task(project_id, task_id):
             task_id,
             project_id
         ))
-
         connection.commit()
         connection.close()
+
+        flash("Task updated successfully!", "success")
 
         return redirect(url_for(
             "project",
@@ -778,6 +785,8 @@ def complete_task(project_id, task_id):
     connection.commit()
     connection.close()
 
+    flash("Task marked as completed!", "success")
+
     return redirect(url_for(
         "project",
         project_id=project_id
@@ -820,6 +829,8 @@ def delete_task(project_id, task_id):
 
     connection.commit()
     connection.close()
+
+    flash("Task deleted successfully!", "success")
 
     return redirect(url_for(
         "project",
