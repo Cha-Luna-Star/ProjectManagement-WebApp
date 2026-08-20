@@ -170,7 +170,6 @@ def create_project():
 @app.route("/projects/<int:project_id>")
 def project(project_id):
 
-    search = request.args.get("search", "").strip()
     status = request.args.get("status")
     priority = request.args.get("priority")
     sort = request.args.get("sort", "newest")
@@ -209,21 +208,6 @@ def project(project_id):
     """
 
     params = [project_id]
-
-    if search:
-        query += """
-            AND (
-                title LIKE ?
-                OR description LIKE ?
-            )
-        """
-
-        search_term = f"%{search}%"
-
-        params.extend([
-            search_term,
-            search_term
-        ])
 
     if status:
         query += " AND status = ?"
@@ -266,20 +250,6 @@ def project(project_id):
         params
     ).fetchall()
 
-    if search:
-        query += """
-            AND (
-                title LIKE ?
-                OR description LIKE ?
-            )
-        """
-
-        search_term = f"%{search}%"
-
-        params.extend([
-            search_term,
-            search_term
-        ])
 
     # Due date status
     today = date.today()

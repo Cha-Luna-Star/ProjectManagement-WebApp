@@ -200,17 +200,18 @@
             ) }}"
             class="task-search"
         >
+        <div class="task-search">
 
             <input
                 type="search"
-                name="search"
+                id="taskSearch"
                 placeholder="Search tasks..."
-                value="{{ request.args.get('search', '') }}"
+                autocomplete="off"
             >
+        
+        </div>
 
-            <button type="submit">
-                Search
-            </button>
+
 
         </form>
         <!-- FILTERS -->
@@ -411,13 +412,15 @@
         <!-- TASK LIST -->
 
         <div class="task-list">
-
+            
             {% if tasks %}
 
                 {% for task in tasks %}
 
-                    <div class="task-card">
-                        
+                    <div
+                        class="task-card"
+                        data-search="{{ task['title'] }} {{ task['description'] }}"
+                    >                        
                         {% if task["due_date"] %}
 
                             <p class="task-due-date due-{{ task['due_status'] }}">
@@ -561,8 +564,58 @@
 
         </div>
 
-    </main>
+        <p
+            id="noTasksFound"
+            class="no-tasks-found"
+            style="display: none;"
+        >
+            No tasks found.
+        </p>
 
+    </main>
+    <script>
+
+        const searchInput = document.getElementById("taskSearch");
+        const taskCards = document.querySelectorAll(".task-card");
+        const noTasksFound = document.getElementById("noTasksFound");
+    
+        searchInput.addEventListener("input", function () {
+    
+            const searchText = this.value.toLowerCase().trim();
+    
+            let visibleTasks = 0;
+    
+            taskCards.forEach(function (task) {
+    
+                const searchableText =
+                    task.dataset.search.toLowerCase();
+    
+                if (searchableText.includes(searchText)) {
+    
+                    task.style.display = "";
+                    visibleTasks++;
+    
+                } else {
+    
+                    task.style.display = "none";
+    
+                }
+    
+            });
+    
+            if (visibleTasks === 0) {
+    
+                noTasksFound.style.display = "block";
+    
+            } else {
+    
+                noTasksFound.style.display = "none";
+    
+            }
+    
+        });
+    
+    </script>
 </body>
 
 </html>
