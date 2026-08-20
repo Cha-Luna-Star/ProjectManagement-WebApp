@@ -883,6 +883,67 @@ def delete_task(project_id, task_id):
         "project",
         project_id=project_id
     ))
+
+@app.route(
+    "/projects/<int:project_id>/tasks/<int:task_id>/status",
+    methods=["POST"]
+)
+def update_task_status(project_id, task_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    status = request.form["status"]
+
+    allowed_statuses = [
+        "Pending",
+        "In Progress",
+        "Completed"
+    ]
+
+    if status not in allowed_statuses:
+        return "Invalid status", 400
+
+    connection = get_db()
+
+    task = connection.execute("""
+        SELECT tasks.id
+        FROM tasks
+        JOIN projects
+            ON tasks.project_id = projects.id
+        WHERE tasks.id = ?
+          AND tasks.project_id = ?
+          AND projects.user_id = ?
+    """, (
+        task_id,
+        project_id,
+        session["user_id"]
+    )).fetchone()
+
+    if task is None:
+        connection.close()
+        return "Task not found", 404
+
+    connection.execute("""
+        UPDATE tasks
+        SET status = ?
+        WHERE id = ?
+          AND project_id = ?
+    """, (
+        status,
+        task_id,
+        project_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+    flash("Task status updated!", "success")
+
+    return redirect(url_for(
+        "project",
+        project_id=project_id
+    ))
     
 if __name__ == "__main__":
     init_db()

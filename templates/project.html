@@ -419,7 +419,9 @@
 
                     <div
                         class="task-card"
+                        
                         data-search="{{ task['title'] }} {{ task['description'] }}"
+                        
                     >                        
                         {% if task["due_date"] %}
 
@@ -442,6 +444,56 @@
                             </p>
 
                         {% endif %}
+
+                        <form
+                            method="POST"
+                            action="{{ url_for(
+                                'update_task_status',
+                                project_id=project['id'],
+                                task_id=task['id']
+                            ) }}"
+                            class="status-form"
+                        >
+
+                            <label for="status-{{ task['id'] }}">
+                                Status
+                            </label>
+
+                            <select
+                                id="status-{{ task['id'] }}"
+                                name="status"
+                                onchange="this.form.submit()"
+                            >
+                                <option
+                                    value="Pending"
+                                    {% if task["status"] == "Pending" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Pending
+                                </option>
+
+                                <option
+                                    value="In Progress"
+                                    {% if task["status"] == "In Progress" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    In Progress
+                                </option>
+
+                                <option
+                                    value="Completed"
+                                    {% if task["status"] == "Completed" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Completed
+                                </option>
+
+                            </select>
+
+                        </form>
 
                         <div class="task-card-header">
 

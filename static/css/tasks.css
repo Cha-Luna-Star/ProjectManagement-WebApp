@@ -235,6 +235,12 @@
     margin-left: 4px;
 }
 
+
+/* =========================
+   STATUS
+========================= */
+
+
 .status-pending {
     background: #f3f4f6;
     color: #4b5563;
@@ -250,6 +256,12 @@
     color: #15803d;
 }
 
+
+/* =========================
+   PRIORITY
+========================= */
+
+
 .priority-low {
     background: #dcfce7;
     color: #15803d;
@@ -264,6 +276,10 @@
     background: #fee2e2;
     color: #b91c1c;
 }
+
+/* =========================
+   DUE DATE
+========================= */
 
 .task-due-date {
     margin-top: 10px;
@@ -308,6 +324,11 @@
     margin-bottom: 10px;
 }
 
+
+/* =========================
+   TASK SEARCH
+========================= */
+
 .task-search input {
     width: 100%;
     height: 50px;
@@ -323,3 +344,35 @@
     border-color: #2563eb;
 }
 
+
+/* =========================
+   STATUS FORM
+========================= */
+
+
+.status-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.status-form label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #51555e;
+}
+
+.status-form select {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+}
+
+.status-form select:focus {
+    border-color: #2563eb;
+}
