@@ -166,6 +166,7 @@ def create_project():
         flash("Project created successfully!", "success")
 
         return redirect(url_for("dashboard"))
+    return render_template("create_project.html")
 
 @app.route("/projects/<int:project_id>")
 def project(project_id):
@@ -720,6 +721,71 @@ def create_task(project_id):
 
 @app.route("/projects/<int:project_id>/tasks/<int:task_id>/edit", methods=["GET", "POST"])
 def edit_task(project_id, task_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (
+        project_id,
+        session["user_id"]
+    )).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    task = connection.execute("""
+        SELECT *
+        FROM tasks
+        WHERE id = ? AND project_id = ?
+    """, (
+        task_id,
+        project_id
+    )).fetchone()
+
+    if task is None:
+        connection.close()
+        return "Task not found", 404
+
+    if request.method == "POST":
+
+        title = request.form["title"]
+        description = request.form["description"]
+        status = request.form["status"]
+
+        connection.execute("""
+            UPDATE tasks
+            SET title = ?, description = ?, status = ?
+            WHERE id = ? AND project_id = ?
+        """, (
+            title,
+            description,
+            status,
+            task_id,
+            project_id
+        ))
+
+        connection.commit()
+        connection.close()
+
+        return redirect(url_for(
+            "project",
+            project_id=project_id
+        ))
+
+    connection.close()
+
+    return render_template(
+        "edit_task.html",
+        task=task,
+        project=project
+    )
 
     if "user_id" not in session:
         return redirect(url_for("login"))

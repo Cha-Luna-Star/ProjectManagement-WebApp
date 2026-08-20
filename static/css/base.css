@@ -16,12 +16,9 @@ a {
 button {
     border: none;
     border-radius: 6px;
-
     padding: 10px 16px;
-
     background: #2563eb;
     color: white;
-
     font-size: 14px;
     font-weight: 600;
 
@@ -45,36 +42,63 @@ button:hover {
 
 .flash-container {
     max-width: 1100px;
-
     margin: 20px auto 0;
-
     padding: 0 20px;
 }
 
 .flash-message {
     padding: 12px 16px;
-
     margin-bottom: 10px;
-
     border-radius: 8px;
-
     font-size: 14px;
-
     font-weight: 500;
 }
 
 .flash-message.success {
     background: #dcfce7;
-
     color: #166534;
-
     border: 1px solid #86efac;
 }
 
 .flash-message.error {
     background: #fee2e2;
-
     color: #991b1b;
-
     border: 1px solid #fca5a5;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    margin-bottom: 20px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.back-button svg {
+    flex-shrink: 0;
+}
+
+.back-button:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+    color: #2563eb;
+}
+
+
+.back-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+}
+
+.back-button:hover .back-icon {
+    transform: translateX(-3px);
 }
