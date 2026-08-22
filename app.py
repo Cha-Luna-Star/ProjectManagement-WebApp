@@ -274,6 +274,149 @@ def create_project():
 @app.route("/projects/<int:project_id>")
 def project(project_id):
 
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    status = request.args.get("status")
+    priority = request.args.get("priority")
+    sort = request.args.get("sort", "newest")
+
+    allowed_statuses = [
+        "Pending",
+        "In Progress",
+        "Completed"
+    ]
+
+    allowed_priorities = [
+        "Low",
+        "Medium",
+        "High"
+    ]
+
+    if status not in allowed_statuses:
+        status = None
+
+    if priority not in allowed_priorities:
+        priority = None
+
+    allowed_sorts = [
+        "newest",
+        "oldest",
+        "priority",
+        "status"
+    ]
+
+    if sort not in allowed_sorts:
+        sort = "newest"
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (
+        project_id,
+        session["user_id"]
+    )).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    task_counts = connection.execute("""
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) AS pending,
+            SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) AS in_progress,
+            SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed
+        FROM tasks
+        WHERE project_id = ?
+    """, (project_id,)).fetchone()
+
+    query = """
+        SELECT *
+        FROM tasks
+        WHERE project_id = ?
+    """
+
+    params = [project_id]
+
+    if status:
+        query += " AND status = ?"
+        params.append(status)
+
+    if priority:
+        query += " AND priority = ?"
+        params.append(priority)
+
+    if sort == "oldest":
+        query += " ORDER BY created_at ASC"
+
+    elif sort == "priority":
+        query += """
+            ORDER BY
+            CASE priority
+                WHEN 'High' THEN 1
+                WHEN 'Medium' THEN 2
+                WHEN 'Low' THEN 3
+                ELSE 4
+            END
+        """
+
+    elif sort == "status":
+        query += """
+            ORDER BY
+            CASE status
+                WHEN 'Pending' THEN 1
+                WHEN 'In Progress' THEN 2
+                WHEN 'Completed' THEN 3
+                ELSE 4
+            END
+        """
+
+    else:
+        query += " ORDER BY created_at DESC"
+
+    tasks = connection.execute(
+        query,
+        params
+    ).fetchall()
+
+    connection.close()
+
+    # Due date status
+    today = date.today()
+    soon = today + timedelta(days=3)
+
+    tasks = [dict(task) for task in tasks]
+
+    for task in tasks:
+
+        task["due_status"] = "none"
+
+        if task["due_date"] and task["status"] != "Completed":
+
+            due_date = date.fromisoformat(task["due_date"])
+
+            if due_date < today:
+                task["due_status"] = "overdue"
+
+            elif due_date <= soon:
+                task["due_status"] = "soon"
+
+            else:
+                task["due_status"] = "normal"
+
+    return render_template(
+        "project.html",
+        project=project,
+        tasks=tasks,
+        task_counts=task_counts,
+        username=session["username"]
+    )
+    
+
     status = request.args.get("status")
     priority = request.args.get("priority")
     sort = request.args.get("sort", "newest")
@@ -655,8 +798,7 @@ def project(project_id):
         username=session["username"]
     )   
     
-@app.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
-def edit_project(project_id):
+
 
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -770,7 +912,90 @@ def edit_project(project_id):
         "edit_project.html",
         project=project
     )
+@app.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
+def edit_project(project_id):
 
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    project = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE id = ? AND user_id = ?
+    """, (
+        project_id,
+        session["user_id"]
+    )).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found", 404
+
+    if request.method == "POST":
+
+        name = request.form.get("name", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not name:
+            connection.close()
+            flash("Project name is required.", "error")
+            return render_template(
+                "edit_project.html",
+                project=project
+            )
+
+        if len(name) > 100:
+            connection.close()
+            flash(
+                "Project name must be 100 characters or less.",
+                "error"
+            )
+            return render_template(
+                "edit_project.html",
+                project=project
+            )
+
+        if len(description) > 1000:
+            connection.close()
+            flash(
+                "Project description must be 1000 characters or less.",
+                "error"
+            )
+            return render_template(
+                "edit_project.html",
+                project=project
+            )
+
+        connection.execute("""
+            UPDATE projects
+            SET name = ?, description = ?
+            WHERE id = ? AND user_id = ?
+        """, (
+            name,
+            description,
+            project_id,
+            session["user_id"]
+        ))
+
+        connection.commit()
+        connection.close()
+
+        flash("Project updated successfully!", "success")
+
+        return redirect(url_for(
+            "project",
+            project_id=project_id
+        ))
+
+    connection.close()
+
+    return render_template(
+        "edit_project.html",
+        project=project
+    )
+    
 @app.route("/projects/<int:project_id>/delete", methods=["GET", "POST"])
 def delete_project(project_id):
     if "user_id" not in session:
