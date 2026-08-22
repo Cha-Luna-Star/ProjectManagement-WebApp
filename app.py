@@ -4,11 +4,15 @@ import os
 from database import init_db, get_db
 from utils import hash_password, verify_password
 from datetime import date, timedelta
+from flask_wtf.csrf import CSRFProtect
+import sqlite3
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
+
+csrf = CSRFProtect(app)
 
 @app.route("/", methods=["GET", "POST"])
 def login():
@@ -161,8 +165,8 @@ def register():
 
     if request.method == "POST":
 
-        username = request.form["username"]
-        password = hash_password(request.form["password"])
+        username = request.form["username"].strip()
+        password = request.form["password"]
 
         connection = get_db()
 
@@ -170,14 +174,44 @@ def register():
 
             connection.execute(
                 "INSERT INTO users (username, password) VALUES (?, ?)",
-                (username, password)
+                (username, hash_password(password))
             )
 
             connection.commit()
 
-        except Exception:
+        except sqlite3.IntegrityError:
             connection.close()
-            return "Username already exists."
+            flash("Username already exists.", "error")
+            return redirect(url_for("register"))
+
+        connection.close()
+
+        flash("Account created successfully!", "success")
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+    if request.method == "POST":
+
+        username = request.form["username"]
+        password = request.form["password"]
+
+        connection = get_db()
+
+        user = connection.execute(
+            "SELECT * FROM users WHERE username = ?",
+            (username,)
+        ).fetchone()
+
+        connection.close()
+
+        if user and verify_password(password, user["password"]):
+            session["user_id"] = user["id"]
+            session["username"] = user["username"]
+
+            return redirect(url_for("dashboard"))
+
+        flash("Invalid username or password.", "error")
 
         connection.close()
 
@@ -845,11 +879,62 @@ def edit_task(project_id, task_id):
 
     if request.method == "POST":
 
-        title = request.form["title"]
-        description = request.form["description"]
-        status = request.form["status"]
-        priority = request.form["priority"]
-        due_date = request.form["due_date"]
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        status = request.form.get("status", "").strip()
+        priority = request.form.get("priority", "").strip()
+        due_date = request.form.get("due_date", "").strip()
+
+        allowed_statuses = [
+            "Pending",
+            "In Progress",
+            "Completed"
+        ]
+
+        allowed_priorities = [
+            "Low",
+            "Medium",
+            "High"
+        ]
+
+        if not title:
+            connection.close()
+            flash("Task title is required.", "error")
+            return render_template(
+                "edit_task.html",
+                task=task,
+                project=project
+            )
+
+        if status not in allowed_statuses:
+            connection.close()
+            flash("Invalid status.", "error")
+            return render_template(
+                "edit_task.html",
+                task=task,
+                project=project
+            )
+
+        if priority not in allowed_priorities:
+            connection.close()
+            flash("Invalid priority.", "error")
+            return render_template(
+                "edit_task.html",
+                task=task,
+                project=project
+            )
+
+        if due_date:
+            try:
+                date.fromisoformat(due_date)
+            except ValueError:
+                connection.close()
+                flash("Invalid due date.", "error")
+                return render_template(
+                    "edit_task.html",
+                    task=task,
+                    project=project
+                )
 
         connection.execute("""
             UPDATE tasks
@@ -886,140 +971,6 @@ def edit_task(project_id, task_id):
         "edit_task.html",
         task=task,
         project=project
-    )
-
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    connection = get_db()
-
-    project = connection.execute("""
-        SELECT *
-        FROM projects
-        WHERE id = ? AND user_id = ?
-    """, (
-        project_id,
-        session["user_id"]
-    )).fetchone()
-
-    if project is None:
-        connection.close()
-        return "Project not found", 404
-
-    task = connection.execute("""
-        SELECT *
-        FROM tasks
-        WHERE id = ? AND project_id = ?
-    """, (
-        task_id,
-        project_id
-    )).fetchone()
-
-    if task is None:
-        connection.close()
-        return "Task not found", 404
-
-    if request.method == "POST":
-
-        title = request.form["title"]
-        description = request.form["description"]
-        status = request.form["status"]
-
-        connection.execute("""
-            UPDATE tasks
-            SET title = ?, description = ?, status = ?
-            WHERE id = ? AND project_id = ?
-        """, (
-            title,
-            description,
-            status,
-            task_id,
-            project_id
-        ))
-
-        connection.commit()
-        connection.close()
-
-        return redirect(url_for(
-            "project",
-            project_id=project_id
-        ))
-
-    connection.close()
-
-    return render_template(
-        "edit_task.html",
-        task=task,
-        project=project
-    )
-
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    connection = get_db()
-
-    # Make sure the task belongs to the project
-    # and the project belongs to the logged-in user
-    task = connection.execute("""
-        SELECT tasks.*
-        FROM tasks
-        JOIN projects ON tasks.project_id = projects.id
-        WHERE tasks.id = ?
-        AND tasks.project_id = ?
-        AND projects.user_id = ?
-    """, (
-        task_id,
-        project_id,
-        session["user_id"]
-    )).fetchone()
-
-    if task is None:
-        connection.close()
-        return "Task not found", 404
-
-    if request.method == "POST":
-
-        title = request.form["title"]
-        description = request.form["description"]
-        status = request.form["status"]
-        priority = request.form["priority"]
-        due_date = request.form["due_date"]
-
-
-        connection.execute("""
-            UPDATE tasks
-            SET title = ?,
-                description = ?,
-                status = ?,
-                priority = ?,
-                due_date = ?
-            WHERE id = ?
-            AND project_id = ?
-        """, (
-            title,
-            description,
-            status,
-            priority,
-            due_date,
-            task_id,
-            project_id
-        ))
-        connection.commit()
-        connection.close()
-
-        flash("Task updated successfully!", "success")
-
-        return redirect(url_for(
-            "project",
-            project_id=project_id
-        ))
-
-    connection.close()
-
-    return render_template(
-        "edit_task.html",
-        task=task,
-        project_id=project_id
     )
 
 @app.route(

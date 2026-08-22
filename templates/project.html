@@ -140,6 +140,7 @@
                         project_id=project['id']
                     ) }}"
                 >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                     <button
                         type="submit"
@@ -475,7 +476,7 @@
                             ) }}"
                             class="status-form"
                         >
-
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <label for="status-{{ task['id'] }}">
                                 Status
                             </label>
@@ -559,6 +560,7 @@
                                         task_id=task['id']
                                     ) }}"
                                 >
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                                     <button
                                         type="submit"
@@ -591,6 +593,7 @@
                                     task_id=task['id']
                                 ) }}"
                             >
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                                 <button
                                     type="submit"
