@@ -11,6 +11,9 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = True
 
 csrf = CSRFProtect(app)
 
@@ -233,8 +236,21 @@ def create_project():
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        name = request.form["name"]
-        description = request.form["description"]
+
+        name = request.form.get("name", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not name:
+            flash("Project name is required.", "error")
+            return render_template("create_project.html")
+
+        if len(name) > 100:
+            flash("Project name must be 100 characters or less.", "error")
+            return render_template("create_project.html")
+
+        if len(description) > 1000:
+            flash("Project description must be 1000 characters or less.", "error")
+            return render_template("create_project.html")
         
         connection = get_db()
         
@@ -659,8 +675,32 @@ def edit_project(project_id):
 
     if request.method == "POST":
 
-        name = request.form["name"]
-        description = request.form["description"]
+        name = request.form.get("name", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not name:
+            flash("Project name is required.", "error")
+            connection.close()
+            return render_template(
+                "edit_project.html",
+                project=project
+            )
+
+        if len(name) > 100:
+            flash("Project name must be 100 characters or less.", "error")
+            connection.close()
+            return render_template(
+                "edit_project.html",
+                project=project
+            )
+
+        if len(description) > 1000:
+            flash("Project description must be 1000 characters or less.", "error")
+            connection.close()
+            return render_template(
+                "edit_project.html",
+                project=project
+            )
 
         connection.execute("""
             UPDATE projects
