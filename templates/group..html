@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>{{ group["name"] }}</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/base.css') }}">
+
+</head>
+
+<body>
+
+    <main>
+
+        <a href="{{ url_for('dashboard') }}"
+           class="back-button">
+
+            <svg
+                class="back-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M19 12H5"></path>
+                <path d="M12 19L5 12L12 5"></path>
+            </svg>
+
+            Back to Dashboard
+
+        </a>
+
+        <h1>{{ group["name"] }}</h1>
+
+        {% if group["description"] %}
+            <p>{{ group["description"] }}</p>
+        {% endif %}
+
+        <h2>Members</h2>
+
+        {% for member_item in members %}
+
+            <p>
+                {{ member_item["username"] }}
+                — {{ member_item["role"] }}
+            </p>
+
+        {% endfor %}
+
+        <h2>Projects</h2>
+
+        {% if projects %}
+
+            {% for project_item in projects %}
+
+                <div>
+
+                    <h3>
+                        {{ project_item["name"] }}
+                    </h3>
+
+                    {% if project_item["description"] %}
+                        <p>
+                            {{ project_item["description"] }}
+                        </p>
+                    {% endif %}
+
+                    <a href="{{ url_for(
+                        'project',
+                        project_id=project_item['id']
+                    ) }}">
+                        View Project
+                    </a>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p>
+                This group doesn't have any projects yet.
+            </p>
+
+        {% endif %}
+
+    </main>
+
+</body>
+
+</html>

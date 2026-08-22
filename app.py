@@ -19,6 +19,7 @@ csrf = CSRFProtect(app)
 
 @app.route("/", methods=["GET", "POST"])
 def login():
+    
 
     if request.method == "POST":
 
@@ -100,6 +101,7 @@ def dashboard():
     connection = get_db()
 
     projects = connection.execute("""
+                                  
         SELECT
             projects.*,
             COUNT(tasks.id) AS total_tasks,
@@ -117,7 +119,17 @@ def dashboard():
         GROUP BY projects.id
         ORDER BY projects.created_at DESC
     """, (session["user_id"],)).fetchall()
-
+    groups = connection.execute("""
+    SELECT
+        groups.*,
+        group_members.role
+    FROM groups
+    JOIN group_members
+        ON groups.id = group_members.group_id
+    WHERE group_members.user_id = ?
+    ORDER BY groups.created_at DESC
+""", (session["user_id"],)).fetchall()
+    
     projects = [dict(project) for project in projects]
 
     for project in projects:
@@ -160,6 +172,7 @@ def dashboard():
         "dashboard.html",
         username=session["username"],
         projects=projects,
+        groups=groups,
         stats=stats
     )
     
@@ -1392,7 +1405,80 @@ def update_task_status(project_id, task_id):
         "project",
         project_id=project_id
     ))
-    
+
+@app.route("/groups/create", methods=["GET", "POST"])
+def create_group():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+
+        name = request.form.get("name", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not name:
+            flash("Group name is required.", "error")
+            return render_template(
+                "create_group.html"
+            )
+
+        if len(name) > 100:
+            flash("Group name must be 100 characters or less.", "error")
+            return render_template(
+                "create_group.html"
+            )
+
+        if len(description) > 1000:
+            flash(
+                "Group description must be 1000 characters or less.",
+                "error"
+            )
+            return render_template(
+                "create_group.html"
+            )
+
+        connection = get_db()
+
+        cursor = connection.execute("""
+            INSERT INTO groups (
+                name,
+                description,
+                created_by
+            )
+            VALUES (?, ?, ?)
+        """, (
+            name,
+            description,
+            session["user_id"]
+        ))
+
+        group_id = cursor.lastrowid
+
+        connection.execute("""
+            INSERT INTO group_members (
+                group_id,
+                user_id,
+                role
+            )
+            VALUES (?, ?, 'Owner')
+        """, (
+            group_id,
+            session["user_id"]
+        ))
+
+        connection.commit()
+        connection.close()
+
+        flash("Group created successfully!", "success")
+
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    return render_template("create_group.html")
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
