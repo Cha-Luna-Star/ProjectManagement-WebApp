@@ -18,7 +18,21 @@
 <body>
 
     <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
 
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
         <a href="{{ url_for('dashboard') }}"
            class="back-button">
 
@@ -121,6 +135,29 @@
         </div>
 
         {% endfor %}
+        {% if member["role"] != "Owner" %}
+
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'leave_group',
+                    group_id=group['id']
+                ) }}"
+            >
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
+                <button type="submit">
+                    Leave Group
+                </button>
+
+            </form>
+
+        {% endif %}
 
         <h2>Projects</h2>
 

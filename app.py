@@ -1631,76 +1631,6 @@ def add_group_member(group_id):
         group_id=group_id
     ))
 
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    if request.method == "POST":
-
-        name = request.form.get("name", "").strip()
-        description = request.form.get("description", "").strip()
-
-        if not name:
-            flash("Group name is required.", "error")
-            return render_template(
-                "create_group.html"
-            )
-
-        if len(name) > 100:
-            flash("Group name must be 100 characters or less.", "error")
-            return render_template(
-                "create_group.html"
-            )
-
-        if len(description) > 1000:
-            flash(
-                "Group description must be 1000 characters or less.",
-                "error"
-            )
-            return render_template(
-                "create_group.html"
-            )
-
-        connection = get_db()
-
-        cursor = connection.execute("""
-            INSERT INTO groups (
-                name,
-                description,
-                created_by
-            )
-            VALUES (?, ?, ?)
-        """, (
-            name,
-            description,
-            session["user_id"]
-        ))
-
-        group_id = cursor.lastrowid
-
-        connection.execute("""
-            INSERT INTO group_members (
-                group_id,
-                user_id,
-                role
-            )
-            VALUES (?, ?, 'Owner')
-        """, (
-            group_id,
-            session["user_id"]
-        ))
-
-        connection.commit()
-        connection.close()
-
-        flash("Group created successfully!", "success")
-
-        return redirect(url_for(
-            "group",
-            group_id=group_id
-        ))
-
-    return render_template("create_group.html")
-
 @app.route("/groups/<int:group_id>/members/<int:user_id>/remove", methods=["POST"])
 def remove_group_member(group_id, user_id):
     
@@ -1764,6 +1694,55 @@ def remove_group_member(group_id, user_id):
         "group",
         group_id=group_id
     ))
+@app.route("/groups/<int:group_id>/leave", methods=["POST"])
+def leave_group(group_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    member = connection.execute("""
+        SELECT role
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if member is None:
+        connection.close()
+        return "You are not a member of this group", 403
+
+    if member["role"] == "Owner":
+        connection.close()
+        flash("The group owner cannot leave the group.", "error")
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    connection.execute("""
+        DELETE FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        session["user_id"]
+    ))
+
+    connection.commit()
+    connection.close()
+
+    flash("You left the group.", "success")
+
+    return redirect(url_for("dashboard"))
+
+
+
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
