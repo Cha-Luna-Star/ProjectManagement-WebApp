@@ -158,6 +158,13 @@
             </form>
 
         {% endif %}
+        
+        <a href="{{ url_for(
+            'create_group_project',
+            group_id=group['id']
+        ) }}">
+            Create Group Project
+        </a>
 
         <h2>Projects</h2>
 

@@ -288,7 +288,6 @@ def create_project():
 @app.route("/projects/<int:project_id>")
 def project(project_id):
 
-
     if "user_id" not in session:
         return redirect(url_for("login"))
 
@@ -296,41 +295,21 @@ def project(project_id):
     priority = request.args.get("priority")
     sort = request.args.get("sort", "newest")
 
-    allowed_statuses = [
-        "Pending",
-        "In Progress",
-        "Completed"
-    ]
-
-    allowed_priorities = [
-        "Low",
-        "Medium",
-        "High"
-    ]
-
-    if status not in allowed_statuses:
-        status = None
-
-    if priority not in allowed_priorities:
-        priority = None
-
-    allowed_sorts = [
-        "newest",
-        "oldest",
-        "priority",
-        "status"
-    ]
-
-    if sort not in allowed_sorts:
-        sort = "newest"
-
     connection = get_db()
 
     project = connection.execute("""
-        SELECT *
+        SELECT projects.*
         FROM projects
-        WHERE id = ? AND user_id = ?
-    """, (
+        LEFT JOIN group_members
+            ON projects.group_id = group_members.group_id
+            AND group_members.user_id = ?
+        WHERE projects.id = ?
+        AND (
+            projects.user_id = ?
+            OR group_members.user_id IS NOT NULL
+        )
+""", (
+        session["user_id"],
         project_id,
         session["user_id"]
     )).fetchone()
@@ -357,11 +336,11 @@ def project(project_id):
 
     params = [project_id]
 
-    if status:
+    if status in ["Pending", "In Progress", "Completed"]:
         query += " AND status = ?"
         params.append(status)
 
-    if priority:
+    if priority in ["Low", "Medium", "High"]:
         query += " AND priority = ?"
         params.append(priority)
 
@@ -400,7 +379,6 @@ def project(project_id):
 
     connection.close()
 
-    # Due date status
     today = date.today()
     soon = today + timedelta(days=3)
 
@@ -927,6 +905,7 @@ def project(project_id):
         "edit_project.html",
         project=project
     )
+
 @app.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
 def edit_project(project_id):
 
@@ -1740,7 +1719,82 @@ def leave_group(group_id):
 
     return redirect(url_for("dashboard"))
 
+@app.route("/groups/<int:group_id>/projects/create", methods=["GET", "POST"])
+def create_group_project(group_id):
 
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    member = connection.execute("""
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if member is None:
+        connection.close()
+        return "You are not a member of this group", 403
+
+    group = connection.execute("""
+        SELECT *
+        FROM groups
+        WHERE id = ?
+    """, (group_id,)).fetchone()
+
+    if group is None:
+        connection.close()
+        return "Group not found", 404
+
+    if request.method == "POST":
+
+        name = request.form.get("name", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not name:
+            connection.close()
+            flash("Project name is required.", "error")
+            return render_template(
+                "create_project.html",
+                group=group
+            )
+
+        connection.execute("""
+            INSERT INTO projects (
+                user_id,
+                group_id,
+                name,
+                description
+            )
+            VALUES (?, ?, ?, ?)
+        """, (
+            session["user_id"],
+            group_id,
+            name,
+            description
+        ))
+
+        connection.commit()
+        connection.close()
+
+        flash("Project created successfully!", "success")
+
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    connection.close()
+
+    return render_template(
+        "create_project.html",
+        group=group
+    )
 
 
 if __name__ == "__main__":
