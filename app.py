@@ -915,10 +915,18 @@ def edit_project(project_id):
     connection = get_db()
 
     project = connection.execute("""
-        SELECT *
+        SELECT projects.*
         FROM projects
-        WHERE id = ? AND user_id = ?
+        LEFT JOIN group_members
+            ON projects.group_id = group_members.group_id
+            AND group_members.user_id = ?
+        WHERE projects.id = ?
+        AND (
+            projects.user_id = ?
+            OR group_members.user_id IS NOT NULL
+        )
     """, (
+        session["user_id"],
         project_id,
         session["user_id"]
     )).fetchone()
@@ -965,12 +973,11 @@ def edit_project(project_id):
         connection.execute("""
             UPDATE projects
             SET name = ?, description = ?
-            WHERE id = ? AND user_id = ?
+            WHERE id = ?
         """, (
             name,
             description,
-            project_id,
-            session["user_id"]
+            project_id
         ))
 
         connection.commit()
@@ -990,18 +997,44 @@ def edit_project(project_id):
         project=project
     )
     
-@app.route("/projects/<int:project_id>/delete", methods=["GET", "POST"])
+@app.route("/projects/<int:project_id>/delete", methods=["POST"])
 def delete_project(project_id):
+
     if "user_id" not in session:
         return redirect(url_for("login"))
-    
+
     connection = get_db()
 
+    project = connection.execute("""
+        SELECT projects.*, groups.created_by
+        FROM projects
+        LEFT JOIN groups
+            ON projects.group_id = groups.id
+        WHERE projects.id = ?
+        AND (
+            projects.user_id = ?
+            OR groups.created_by = ?
+        )
+    """, (
+        project_id,
+        session["user_id"],
+        session["user_id"]
+    )).fetchone()
+
+    if project is None:
+        connection.close()
+        return "Project not found or you do not have permission", 403
+
     connection.execute("""
-            DELETE FROM projects
-            WHERE id =? AND user_id = ?
-    """, (project_id, session["user_id"]))
-    
+        DELETE FROM tasks
+        WHERE project_id = ?
+    """, (project_id,))
+
+    connection.execute("""
+        DELETE FROM projects
+        WHERE id = ?
+    """, (project_id,))
+
     connection.commit()
     connection.close()
 
@@ -1111,10 +1144,18 @@ def edit_task(project_id, task_id):
     connection = get_db()
 
     project = connection.execute("""
-        SELECT *
+        SELECT projects.*
         FROM projects
-        WHERE id = ? AND user_id = ?
+        LEFT JOIN group_members
+            ON projects.group_id = group_members.group_id
+            AND group_members.user_id = ?
+        WHERE projects.id = ?
+        AND (
+            projects.user_id = ?
+            OR group_members.user_id IS NOT NULL
+        )
     """, (
+        session["user_id"],
         project_id,
         session["user_id"]
     )).fetchone()
@@ -1126,7 +1167,8 @@ def edit_task(project_id, task_id):
     task = connection.execute("""
         SELECT *
         FROM tasks
-        WHERE id = ? AND project_id = ?
+        WHERE id = ?
+        AND project_id = ?
     """, (
         task_id,
         project_id
@@ -1140,9 +1182,9 @@ def edit_task(project_id, task_id):
 
         title = request.form.get("title", "").strip()
         description = request.form.get("description", "").strip()
-        status = request.form.get("status", "").strip()
-        priority = request.form.get("priority", "").strip()
-        due_date = request.form.get("due_date", "").strip()
+        status = request.form.get("status")
+        priority = request.form.get("priority")
+        due_date = request.form.get("due_date")
 
         allowed_statuses = [
             "Pending",
@@ -1167,33 +1209,11 @@ def edit_task(project_id, task_id):
 
         if status not in allowed_statuses:
             connection.close()
-            flash("Invalid status.", "error")
-            return render_template(
-                "edit_task.html",
-                task=task,
-                project=project
-            )
+            return "Invalid status", 400
 
         if priority not in allowed_priorities:
             connection.close()
-            flash("Invalid priority.", "error")
-            return render_template(
-                "edit_task.html",
-                task=task,
-                project=project
-            )
-
-        if due_date:
-            try:
-                date.fromisoformat(due_date)
-            except ValueError:
-                connection.close()
-                flash("Invalid due date.", "error")
-                return render_template(
-                    "edit_task.html",
-                    task=task,
-                    project=project
-                )
+            return "Invalid priority", 400
 
         connection.execute("""
             UPDATE tasks
@@ -1248,10 +1268,17 @@ def complete_task(project_id, task_id):
         FROM tasks
         JOIN projects
             ON tasks.project_id = projects.id
+        LEFT JOIN group_members
+            ON projects.group_id = group_members.group_id
+            AND group_members.user_id = ?
         WHERE tasks.id = ?
-          AND tasks.project_id = ?
-          AND projects.user_id = ?
+        AND tasks.project_id = ?
+        AND (
+            projects.user_id = ?
+            OR group_members.user_id IS NOT NULL
+        )
     """, (
+        session["user_id"],
         task_id,
         project_id,
         session["user_id"]
@@ -1289,16 +1316,22 @@ def delete_task(project_id, task_id):
 
     connection = get_db()
 
-    # Make sure the task belongs to the project
-    # and the project belongs to the logged-in user
     task = connection.execute("""
         SELECT tasks.id
         FROM tasks
-        JOIN projects ON tasks.project_id = projects.id
+        JOIN projects
+            ON tasks.project_id = projects.id
+        LEFT JOIN group_members
+            ON projects.group_id = group_members.group_id
+            AND group_members.user_id = ?
         WHERE tasks.id = ?
         AND tasks.project_id = ?
-        AND projects.user_id = ?
+        AND (
+            projects.user_id = ?
+            OR group_members.user_id IS NOT NULL
+        )
     """, (
+        session["user_id"],
         task_id,
         project_id,
         session["user_id"]
@@ -1306,11 +1339,12 @@ def delete_task(project_id, task_id):
 
     if task is None:
         connection.close()
-        return "Task not found", 404
+        return "Task not found or you do not have permission", 403
 
     connection.execute("""
         DELETE FROM tasks
-        WHERE id = ? AND project_id = ?
+        WHERE id = ?
+        AND project_id = ?
     """, (
         task_id,
         project_id
