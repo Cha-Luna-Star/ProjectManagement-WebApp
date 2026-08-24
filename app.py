@@ -10,16 +10,17 @@ import sqlite3
 load_dotenv()
 
 app = Flask(__name__)
+print(app.template_folder)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_SECURE"] = False
 
 csrf = CSRFProtect(app)
 
 @app.route("/", methods=["GET", "POST"])
 def login():
-    
+
 
     if request.method == "POST":
 
@@ -100,8 +101,18 @@ def dashboard():
 
     connection = get_db()
 
+    groups = connection.execute("""
+        SELECT
+            groups.*,
+            group_members.role
+        FROM groups
+        JOIN group_members
+            ON groups.id = group_members.group_id
+        WHERE group_members.user_id = ?
+        ORDER BY groups.created_at DESC
+    """, (session["user_id"],)).fetchall()
+
     projects = connection.execute("""
-                                  
         SELECT
             projects.*,
             COUNT(tasks.id) AS total_tasks,
@@ -119,16 +130,6 @@ def dashboard():
         GROUP BY projects.id
         ORDER BY projects.created_at DESC
     """, (session["user_id"],)).fetchall()
-    groups = connection.execute("""
-    SELECT
-        groups.*,
-        group_members.role
-    FROM groups
-    JOIN group_members
-        ON groups.id = group_members.group_id
-    WHERE group_members.user_id = ?
-    ORDER BY groups.created_at DESC
-""", (session["user_id"],)).fetchall()
     
     projects = [dict(project) for project in projects]
 
@@ -286,6 +287,7 @@ def create_project():
 
 @app.route("/projects/<int:project_id>")
 def project(project_id):
+
 
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -1472,6 +1474,226 @@ def create_group():
 
         flash("Group created successfully!", "success")
 
+        return redirect(url_for("dashboard"))
+
+    return render_template("create_group.html")
+
+@app.route("/groups/<int:group_id>")
+def group(group_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    group = connection.execute("""
+        SELECT *
+        FROM groups
+        WHERE id = ?
+    """, (group_id,)).fetchone()
+
+    if group is None:
+        connection.close()
+        return "Group not found", 404
+
+    member = connection.execute("""
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if member is None:
+        connection.close()
+        return "You are not a member of this group", 403
+
+    members = connection.execute("""
+        SELECT
+            group_members.*,
+            users.username
+        FROM group_members
+        JOIN users
+            ON group_members.user_id = users.id
+        WHERE group_members.group_id = ?
+        ORDER BY group_members.joined_at ASC
+    """, (group_id,)).fetchall()
+
+    projects = connection.execute("""
+        SELECT *
+        FROM projects
+        WHERE group_id = ?
+        ORDER BY created_at DESC
+    """, (group_id,)).fetchall()
+
+    connection.close()
+
+    return render_template(
+        "group.html",
+        group=group,
+        member=member,
+        members=members,
+        projects=projects,
+        username=session["username"]
+    )
+    
+@app.route("/groups/<int:group_id>/members/add", methods=["POST"])
+def add_group_member(group_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    username = request.form.get("username", "").strip()
+
+    if not username:
+        flash("Username is required.", "error")
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    connection = get_db()
+
+    # Check that the current user owns the group
+    group = connection.execute("""
+        SELECT *
+        FROM groups
+        WHERE id = ?
+        AND created_by = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if group is None:
+        connection.close()
+        return "You do not have permission to manage this group", 403
+
+    # Find the user
+    user = connection.execute("""
+        SELECT id, username
+        FROM users
+        WHERE username = ?
+    """, (username,)).fetchone()
+
+    if user is None:
+        connection.close()
+        flash("User not found.", "error")
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    # Check if the user is already a member
+    existing_member = connection.execute("""
+        SELECT id
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        user["id"]
+    )).fetchone()
+
+    if existing_member:
+        connection.close()
+        flash("User is already a member of this group.", "error")
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    # Add the user
+    connection.execute("""
+        INSERT INTO group_members (
+            group_id,
+            user_id,
+            role
+        )
+        VALUES (?, ?, 'Member')
+    """, (
+        group_id,
+        user["id"]
+    ))
+
+    connection.commit()
+    connection.close()
+
+    flash(
+        f"{user['username']} was added to the group!",
+        "success"
+    )
+
+    return redirect(url_for(
+        "group",
+        group_id=group_id
+    ))
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+
+        name = request.form.get("name", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not name:
+            flash("Group name is required.", "error")
+            return render_template(
+                "create_group.html"
+            )
+
+        if len(name) > 100:
+            flash("Group name must be 100 characters or less.", "error")
+            return render_template(
+                "create_group.html"
+            )
+
+        if len(description) > 1000:
+            flash(
+                "Group description must be 1000 characters or less.",
+                "error"
+            )
+            return render_template(
+                "create_group.html"
+            )
+
+        connection = get_db()
+
+        cursor = connection.execute("""
+            INSERT INTO groups (
+                name,
+                description,
+                created_by
+            )
+            VALUES (?, ?, ?)
+        """, (
+            name,
+            description,
+            session["user_id"]
+        ))
+
+        group_id = cursor.lastrowid
+
+        connection.execute("""
+            INSERT INTO group_members (
+                group_id,
+                user_id,
+                role
+            )
+            VALUES (?, ?, 'Owner')
+        """, (
+            group_id,
+            session["user_id"]
+        ))
+
+        connection.commit()
+        connection.close()
+
+        flash("Group created successfully!", "success")
+
         return redirect(url_for(
             "group",
             group_id=group_id
@@ -1479,6 +1701,69 @@ def create_group():
 
     return render_template("create_group.html")
 
+@app.route("/groups/<int:group_id>/members/<int:user_id>/remove", methods=["POST"])
+def remove_group_member(group_id, user_id):
+    
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    group = connection.execute("""
+        SELECT *
+        FROM groups
+        WHERE id = ?
+        AND created_by = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if group is None:
+        connection.close()
+        return "You do not have permission to manage this group", 403
+
+    if user_id == session["user_id"]:
+        connection.close()
+        flash("The group owner cannot remove themselves.", "error")
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    member = connection.execute("""
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        user_id
+    )).fetchone()
+
+    if member is None:
+        connection.close()
+        return "Member not found", 404
+
+    connection.execute("""
+        DELETE FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        user_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+    flash("Member removed successfully!", "success")
+
+    return redirect(url_for(
+        "group",
+        group_id=group_id
+    ))
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)

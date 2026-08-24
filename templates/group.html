@@ -48,12 +48,77 @@
 
         <h2>Members</h2>
 
+        {% if member["role"] == "Owner" %}
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'add_group_member',
+                group_id=group['id']
+            ) }}"
+        >
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+            <div>
+
+                <label for="username">
+                    Add Member
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Enter username"
+                    required
+                >
+
+                <button type="submit">
+                    Add Member
+                </button>
+
+            </div>
+
+        </form>
+
+{% endif %}
         {% for member_item in members %}
+
+        <div>
 
             <p>
                 {{ member_item["username"] }}
                 — {{ member_item["role"] }}
             </p>
+        
+            {% if member["role"] == "Owner" and member_item["user_id"] != member["user_id"] %}        
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'remove_group_member',
+                        group_id=group['id'],
+                        user_id=member_item['user_id']
+                    ) }}"
+                >
+        
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
+        
+                    <button type="submit">
+                        Remove
+                    </button>
+        
+                </form>
+        
+            {% endif %}
+        
+        </div>
 
         {% endfor %}
 
