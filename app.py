@@ -1569,17 +1569,19 @@ def add_group_member(group_id):
 
     connection = get_db()
 
-    # Check that the current user owns the group
+    # Check that the current user is Owner or Admin
     group = connection.execute("""
-        SELECT *
+        SELECT groups.*
         FROM groups
-        WHERE id = ?
-        AND created_by = ?
+        JOIN group_members
+            ON groups.id = group_members.group_id
+        WHERE groups.id = ?
+        AND group_members.user_id = ?
+        AND group_members.role IN ('Owner', 'Admin')
     """, (
         group_id,
         session["user_id"]
     )).fetchone()
-
     if group is None:
         connection.close()
         return "You do not have permission to manage this group", 403
@@ -1654,10 +1656,13 @@ def remove_group_member(group_id, user_id):
     connection = get_db()
 
     group = connection.execute("""
-        SELECT *
+        SELECT groups.*
         FROM groups
-        WHERE id = ?
-        AND created_by = ?
+        JOIN group_members
+            ON groups.id = group_members.group_id
+        WHERE groups.id = ?
+        AND group_members.user_id = ?
+        AND group_members.role IN ('Owner', 'Admin')
     """, (
         group_id,
         session["user_id"]
