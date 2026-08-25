@@ -1646,6 +1646,70 @@ def add_group_member(group_id):
         group_id=group_id
     ))
 
+@app.route("/groups/<int:group_id>/members/<int:user_id>/promote", methods=["POST"])
+def promote_group_member(group_id, user_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    group = connection.execute("""
+        SELECT *
+        FROM groups
+        WHERE id = ?
+        AND created_by = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if group is None:
+        connection.close()
+        return "Only the group owner can promote members", 403
+
+    member = connection.execute("""
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        user_id
+    )).fetchone()
+
+    if member is None:
+        connection.close()
+        return "Member not found", 404
+
+    if member["role"] != "Member":
+        connection.close()
+        flash("This user is already an Admin or Owner.", "error")
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    connection.execute("""
+        UPDATE group_members
+        SET role = 'Admin'
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        user_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+    flash("Member promoted to Admin.", "success")
+
+    return redirect(url_for(
+        "group",
+        group_id=group_id
+    ))
+
 @app.route("/groups/<int:group_id>/members/<int:user_id>/remove", methods=["POST"])
 def remove_group_member(group_id, user_id):
     
