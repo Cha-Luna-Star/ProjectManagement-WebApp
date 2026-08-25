@@ -1710,6 +1710,70 @@ def promote_group_member(group_id, user_id):
         group_id=group_id
     ))
 
+@app.route("/groups/<int:group_id>/members/<int:user_id>/demote", methods=["POST"])
+def demote_group_member(group_id, user_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    group = connection.execute("""
+        SELECT *
+        FROM groups
+        WHERE id = ?
+        AND created_by = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if group is None:
+        connection.close()
+        return "Only the group owner can demote members", 403
+
+    member = connection.execute("""
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        user_id
+    )).fetchone()
+
+    if member is None:
+        connection.close()
+        return "Member not found", 404
+
+    if member["role"] != "Admin":
+        connection.close()
+        flash("This user is not an Admin.", "error")
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    connection.execute("""
+        UPDATE group_members
+        SET role = 'Member'
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        user_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+    flash("Admin demoted to Member.", "success")
+
+    return redirect(url_for(
+        "group",
+        group_id=group_id
+    ))
+
 @app.route("/groups/<int:group_id>/members/<int:user_id>/remove", methods=["POST"])
 def remove_group_member(group_id, user_id):
     
@@ -1776,6 +1840,7 @@ def remove_group_member(group_id, user_id):
         "group",
         group_id=group_id
     ))
+
 @app.route("/groups/<int:group_id>/leave", methods=["POST"])
 def leave_group(group_id):
 

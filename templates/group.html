@@ -148,10 +148,34 @@
                         </form>
 
                     {% endif %}
+
                     <button type="submit">
                         Remove
                     </button>
-        
+                    
+                    {% if member["role"] == "Owner" and member_item["role"] == "Admin" %}
+                        <form
+                            method="POST"
+                            action="{{ url_for(
+                                'demote_group_member',
+                                group_id=group['id'],
+                                user_id=member_item['user_id']
+                            ) }}"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="{{ csrf_token() }}"
+                            >
+
+                            <button type="submit">
+                                Demote to Member
+                            </button>
+
+                        </form>
+
+                    {% endif %}
                 </form>
         
             {% endif %}
