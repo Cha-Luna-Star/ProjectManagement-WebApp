@@ -1846,7 +1846,6 @@ def remove_group_member(group_id, user_id):
 
 @app.route("/groups/<int:group_id>/leave", methods=["POST"])
 def leave_group(group_id):
-
     if "user_id" not in session:
         return redirect(url_for("login"))
 
@@ -1885,9 +1884,6 @@ def leave_group(group_id):
     flash("You left the group.", "success")
 
     return redirect(url_for("dashboard"))
-
-@app.route("/groups/<int:group_id>/leave", methods=["POST"])
-def leave_group(group_id):
 
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -1929,6 +1925,45 @@ def leave_group(group_id):
     connection.close()
 
     flash("You left the group.", "success")
+
+    return redirect(url_for("dashboard"))
+
+@app.route("/groups/<int:group_id>/delete", methods=["POST"])
+def delete_group(group_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    group = connection.execute("""
+        SELECT *
+        FROM groups
+        WHERE id = ?
+        AND created_by = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if group is None:
+        connection.close()
+        return "You do not have permission to delete this group", 403
+
+    connection.execute("""
+        DELETE FROM group_members
+        WHERE group_id = ?
+    """, (group_id,))
+
+    connection.execute("""
+        DELETE FROM groups
+        WHERE id = ?
+    """, (group_id,))
+
+    connection.commit()
+    connection.close()
+
+    flash("Group deleted successfully!", "success")
 
     return redirect(url_for("dashboard"))
 
