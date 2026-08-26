@@ -108,7 +108,54 @@
                 — {{ member_item["role"] }}
             </p>
         
-            {% if member["role"] == "Owner" and member_item["user_id"] != member["user_id"] %}        
+            {% if member["role"] == "Owner" %}
+
+            {% if member_item["role"] == "Member" %}
+
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'promote_group_member',
+                        group_id=group['id'],
+                        user_id=member_item['user_id']
+                    ) }}"
+                >
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
+
+                    <button type="submit">
+                        Promote to Admin
+                    </button>
+                </form>
+
+            {% elif member_item["role"] == "Admin" %}
+
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'demote_group_member',
+                        group_id=group['id'],
+                        user_id=member_item['user_id']
+                    ) }}"
+                >
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
+
+                    <button type="submit">
+                        Demote to Member
+                    </button>
+                </form>
+
+            {% endif %}
+
+            {% if member_item["role"] != "Owner" %}
+
                 <form
                     method="POST"
                     action="{{ url_for(
@@ -117,68 +164,41 @@
                         user_id=member_item['user_id']
                     ) }}"
                 >
-        
                     <input
                         type="hidden"
                         name="csrf_token"
                         value="{{ csrf_token() }}"
                     >
-                    
-                    {% if member["role"] == "Owner" and member_item["role"] == "Member" %}
-
-                        <form
-                            method="POST"
-                            action="{{ url_for(
-                                'promote_group_member',
-                                group_id=group['id'],
-                                user_id=member_item['user_id']
-                            ) }}"
-                        >
-
-                            <input
-                                type="hidden"
-                                name="csrf_token"
-                                value="{{ csrf_token() }}"
-                            >
-
-                            <button type="submit">
-                                Promote to Admin
-                            </button>
-
-                        </form>
-
-                    {% endif %}
 
                     <button type="submit">
                         Remove
                     </button>
-                    
-                    {% if member["role"] == "Owner" and member_item["role"] == "Admin" %}
-                        <form
-                            method="POST"
-                            action="{{ url_for(
-                                'demote_group_member',
-                                group_id=group['id'],
-                                user_id=member_item['user_id']
-                            ) }}"
-                        >
-
-                            <input
-                                type="hidden"
-                                name="csrf_token"
-                                value="{{ csrf_token() }}"
-                            >
-
-                            <button type="submit">
-                                Demote to Member
-                            </button>
-
-                        </form>
-
-                    {% endif %}
                 </form>
-        
+
             {% endif %}
+
+        {% elif member["role"] == "Admin" and member_item["role"] == "Member" %}
+
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'remove_group_member',
+                    group_id=group['id'],
+                    user_id=member_item['user_id']
+                ) }}"
+            >
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
+                <button type="submit">
+                    Remove
+                </button>
+            </form>
+
+        {% endif %}
         
         </div>
 
@@ -213,6 +233,28 @@
         ) }}">
             Create Group Project
         </a>
+
+        {% if member["role"] != "Owner" %}
+
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'leave_group',
+                    group_id=group['id']
+                ) }}"
+            >
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
+                <button type="submit">
+                    Leave Group
+                </button>
+            </form>
+
+        {% endif %}
 
         <h2>Projects</h2>
 
