@@ -1951,6 +1951,20 @@ def delete_group(group_id):
         return "You do not have permission to delete this group", 403
 
     connection.execute("""
+        DELETE FROM tasks
+        WHERE project_id IN (
+            SELECT id
+            FROM projects
+            WHERE group_id = ?
+        )
+    """, (group_id,))
+
+    connection.execute("""
+        DELETE FROM projects
+        WHERE group_id = ?
+    """, (group_id,))
+
+    connection.execute("""
         DELETE FROM group_members
         WHERE group_id = ?
     """, (group_id,))
