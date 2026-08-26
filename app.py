@@ -308,7 +308,7 @@ def project(project_id):
             projects.user_id = ?
             OR group_members.user_id IS NOT NULL
         )
-""", (
+    """, (
         session["user_id"],
         project_id,
         session["user_id"]
@@ -1051,10 +1051,21 @@ def create_task(project_id):
     connection = get_db()
 
     project = connection.execute("""
-        SELECT *
+        SELECT projects.*
         FROM projects
-        WHERE id = ? AND user_id = ?
-    """, (project_id, session["user_id"])).fetchone()
+        LEFT JOIN group_members
+            ON projects.group_id = group_members.group_id
+            AND group_members.user_id = ?
+        WHERE projects.id = ?
+        AND (
+            projects.user_id = ?
+            OR group_members.user_id IS NOT NULL
+        )
+    """, (
+        session["user_id"],
+        project_id,
+        session["user_id"]
+    )).fetchone()
 
     if project is None:
         connection.close()
@@ -1387,10 +1398,17 @@ def update_task_status(project_id, task_id):
         FROM tasks
         JOIN projects
             ON tasks.project_id = projects.id
+        LEFT JOIN group_members
+            ON projects.group_id = group_members.group_id
+            AND group_members.user_id = ?
         WHERE tasks.id = ?
-          AND tasks.project_id = ?
-          AND projects.user_id = ?
+        AND tasks.project_id = ?
+        AND (
+            projects.user_id = ?
+            OR group_members.user_id IS NOT NULL
+        )
     """, (
+        session["user_id"],
         task_id,
         project_id,
         session["user_id"]
@@ -1550,6 +1568,83 @@ def group(group_id):
         members=members,
         projects=projects,
         username=session["username"]
+    )
+
+@app.route("/groups/<int:group_id>/projects/create", methods=["GET", "POST"])
+def create_group_project(group_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    member = connection.execute("""
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if member is None:
+        connection.close()
+        return "You are not a member of this group", 403
+
+    group = connection.execute("""
+        SELECT *
+        FROM groups
+        WHERE id = ?
+    """, (group_id,)).fetchone()
+
+    if group is None:
+        connection.close()
+        return "Group not found", 404
+
+    if request.method == "POST":
+
+        name = request.form.get("name", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not name:
+            connection.close()
+            flash("Project name is required.", "error")
+            return render_template(
+                "create_project.html",
+                group=group
+            )
+
+        connection.execute("""
+            INSERT INTO projects (
+                user_id,
+                group_id,
+                name,
+                description
+            )
+            VALUES (?, ?, ?, ?)
+        """, (
+            session["user_id"],
+            group_id,
+            name,
+            description
+        ))
+
+        connection.commit()
+        connection.close()
+
+        flash("Project created successfully!", "success")
+
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    connection.close()
+
+    return render_template(
+        "create_project.html",
+        group=group
     )
     
 @app.route("/groups/<int:group_id>/members/add", methods=["POST"])

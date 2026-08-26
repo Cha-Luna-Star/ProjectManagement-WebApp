@@ -110,6 +110,21 @@
                 {{ project["name"] }}
             </h2>
 
+            {% if project["group_id"] %}
+                <p>
+                    Group Project
+                </p>
+            {% endif %}
+
+            {% if project["group_id"] %}
+                <a href="{{ url_for(
+                    'group',
+                    group_id=project['group_id']
+                ) }}">
+                    Back to Group
+                </a>
+            {% endif %}
+
             <p>
                 {{ project["description"] }}
             </p>
