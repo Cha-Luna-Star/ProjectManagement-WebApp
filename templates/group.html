@@ -164,6 +164,29 @@
                 </form>
 
             {% endif %}
+            
+            {% if member["role"] == "Owner" and member_item["role"] != "Owner" %}
+
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'transfer_group_ownership',
+                        group_id=group['id'],
+                        user_id=member_item['user_id']
+                    ) }}"
+                >
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
+
+                    <button type="submit">
+                        Transfer Ownership
+                    </button>
+                </form>
+
+            {% endif %}
 
             {% if member_item["role"] != "Owner" %}
 

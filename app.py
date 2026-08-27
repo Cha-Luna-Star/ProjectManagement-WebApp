@@ -1982,6 +1982,85 @@ def demote_group_member(group_id, user_id):
         group_id=group_id
     ))
 
+@app.route("/groups/<int:group_id>/members/<int:user_id>/transfer", methods=["POST"])
+def transfer_group_ownership(group_id, user_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    owner = connection.execute("""
+        SELECT *
+        FROM groups
+        WHERE id = ?
+        AND created_by = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if owner is None:
+        connection.close()
+        return "Only the group owner can transfer ownership", 403
+
+    target_member = connection.execute("""
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        user_id
+    )).fetchone()
+
+    if target_member is None:
+        connection.close()
+        return "Member not found", 404
+
+    if user_id == session["user_id"]:
+        connection.close()
+        return "You are already the owner", 400
+
+    connection.execute("""
+        UPDATE groups
+        SET created_by = ?
+        WHERE id = ?
+    """, (
+        user_id,
+        group_id
+    ))
+
+    connection.execute("""
+        UPDATE group_members
+        SET role = 'Owner'
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        user_id
+    ))
+
+    connection.execute("""
+        UPDATE group_members
+        SET role = 'Admin'
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        session["user_id"]
+    ))
+
+    connection.commit()
+    connection.close()
+
+    flash("Group ownership transferred successfully!", "success")
+
+    return redirect(url_for(
+        "group",
+        group_id=group_id
+    ))
+
 @app.route("/groups/<int:group_id>/members/<int:user_id>/remove", methods=["POST"])
 def remove_group_member(group_id, user_id):
 
@@ -2009,10 +2088,14 @@ def remove_group_member(group_id, user_id):
         return "You do not have permission to remove members", 403
 
     target_member = connection.execute("""
-        SELECT role
+        SELECT
+            group_members.*,
+            groups.created_by
         FROM group_members
-        WHERE group_id = ?
-        AND user_id = ?
+        JOIN groups
+            ON group_members.group_id = groups.id
+        WHERE group_members.group_id = ?
+        AND group_members.user_id = ?
     """, (
         group_id,
         user_id
@@ -2022,7 +2105,7 @@ def remove_group_member(group_id, user_id):
         connection.close()
         return "Member not found", 404
 
-    if target_member["role"] == "Owner":
+    if target_member["created_by"] == user_id:
         connection.close()
         return "The group owner cannot be removed", 403
 
@@ -2060,10 +2143,14 @@ def leave_group(group_id):
     connection = get_db()
 
     member = connection.execute("""
-        SELECT role
+        SELECT
+            group_members.role,
+            groups.created_by
         FROM group_members
-        WHERE group_id = ?
-        AND user_id = ?
+        JOIN groups
+            ON group_members.group_id = groups.id
+        WHERE group_members.group_id = ?
+        AND group_members.user_id = ?
     """, (
         group_id,
         session["user_id"]
@@ -2073,52 +2160,9 @@ def leave_group(group_id):
         connection.close()
         return "You are not a member of this group", 403
 
-    if member["role"] == "Owner":
+    if member["created_by"] == session["user_id"]:
         connection.close()
         return "The group owner cannot leave the group", 403
-
-    connection.execute("""
-        DELETE FROM group_members
-        WHERE group_id = ?
-        AND user_id = ?
-    """, (
-        group_id,
-        session["user_id"]
-    ))
-
-    connection.commit()
-    connection.close()
-
-    flash("You left the group.", "success")
-
-    return redirect(url_for("dashboard"))
-
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    connection = get_db()
-
-    member = connection.execute("""
-        SELECT role
-        FROM group_members
-        WHERE group_id = ?
-        AND user_id = ?
-    """, (
-        group_id,
-        session["user_id"]
-    )).fetchone()
-
-    if member is None:
-        connection.close()
-        return "You are not a member of this group", 403
-
-    if member["role"] == "Owner":
-        connection.close()
-        flash("The group owner cannot leave the group.", "error")
-        return redirect(url_for(
-            "group",
-            group_id=group_id
-        ))
 
     connection.execute("""
         DELETE FROM group_members
