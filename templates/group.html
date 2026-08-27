@@ -55,6 +55,17 @@
         </a>
 
         <h1>{{ group["name"] }}</h1>
+        
+        {% if member["role"] == "Owner" %}
+
+            <a href="{{ url_for(
+                'edit_group',
+                group_id=group['id']
+            ) }}">
+                Edit Group
+            </a>
+
+        {% endif %}
 
         {% if group["description"] %}
             <p>{{ group["description"] }}</p>

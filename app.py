@@ -1594,6 +1594,89 @@ def group(group_id):
         username=session["username"]
     )
 
+@app.route("/groups/<int:group_id>/edit", methods=["GET", "POST"])
+def edit_group(group_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_db()
+
+    group = connection.execute("""
+        SELECT *
+        FROM groups
+        WHERE id = ?
+        AND created_by = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if group is None:
+        connection.close()
+        return "Only the group owner can edit the group", 403
+
+    if request.method == "POST":
+
+        name = request.form.get("name", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not name:
+            connection.close()
+            flash("Group name is required.", "error")
+            return render_template(
+                "edit_group.html",
+                group=group
+            )
+
+        if len(name) > 100:
+            connection.close()
+            flash("Group name must be 100 characters or less.", "error")
+            return render_template(
+                "edit_group.html",
+                group=group
+            )
+
+        if len(description) > 1000:
+            connection.close()
+            flash(
+                "Group description must be 1000 characters or less.",
+                "error"
+            )
+            return render_template(
+                "edit_group.html",
+                group=group
+            )
+
+        connection.execute("""
+            UPDATE groups
+            SET name = ?, description = ?
+            WHERE id = ?
+            AND created_by = ?
+        """, (
+            name,
+            description,
+            group_id,
+            session["user_id"]
+        ))
+
+        connection.commit()
+        connection.close()
+
+        flash("Group updated successfully!", "success")
+
+        return redirect(url_for(
+            "group",
+            group_id=group_id
+        ))
+
+    connection.close()
+
+    return render_template(
+        "edit_group.html",
+        group=group
+    )
+
 @app.route("/groups/<int:group_id>/projects/create", methods=["GET", "POST"])
 def create_group_project(group_id):
 
