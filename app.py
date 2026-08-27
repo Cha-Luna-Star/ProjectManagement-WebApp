@@ -174,8 +174,15 @@ def dashboard():
         FROM projects
         LEFT JOIN tasks
             ON projects.id = tasks.project_id
+        LEFT JOIN group_members
+            ON projects.group_id = group_members.group_id
+            AND group_members.user_id = ?
         WHERE projects.user_id = ?
-    """, (session["user_id"],)).fetchone()
+        OR group_members.user_id IS NOT NULL
+    """, (
+        session["user_id"],
+        session["user_id"]
+    )).fetchone()
 
     connection.close()
 
@@ -1016,21 +1023,28 @@ def delete_project(project_id):
     connection = get_db()
 
     project = connection.execute("""
-        SELECT projects.*, groups.created_by
+        SELECT projects.*
         FROM projects
         LEFT JOIN groups
             ON projects.group_id = groups.id
         WHERE projects.id = ?
         AND (
-            projects.user_id = ?
-            OR groups.created_by = ?
+            (
+                projects.group_id IS NULL
+                AND projects.user_id = ?
+            )
+            OR
+            (
+                projects.group_id IS NOT NULL
+                AND groups.created_by = ?
+            )
         )
     """, (
         project_id,
         session["user_id"],
         session["user_id"]
     )).fetchone()
-
+    
     if project is None:
         connection.close()
         return "Project not found or you do not have permission", 403
@@ -1603,6 +1617,10 @@ def create_group_project(group_id):
     if member is None:
         connection.close()
         return "You are not a member of this group", 403
+    
+    if member["role"] not in ["Owner", "Admin"]:
+        connection.close()
+        return "You do not have permission to create projects in this group", 403
 
     group = connection.execute("""
         SELECT *

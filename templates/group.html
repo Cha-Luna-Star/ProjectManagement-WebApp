@@ -280,7 +280,7 @@
 
         <h2>Projects</h2>
         
-        {% if member["role"] in ["Owner", "Admin", "Member"] %}
+        {% if member["role"] in ["Owner", "Admin"] %}
 
             <a href="{{ url_for(
                 'create_group_project',
@@ -288,7 +288,7 @@
             ) }}">
                 Create Project
             </a>
-        
+
         {% endif %}
 
         {% if projects %}
