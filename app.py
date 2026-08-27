@@ -115,6 +115,7 @@ def dashboard():
     projects = connection.execute("""
         SELECT
             projects.*,
+            groups.name AS group_name,
             COUNT(tasks.id) AS total_tasks,
             SUM(
                 CASE
@@ -126,10 +127,19 @@ def dashboard():
         FROM projects
         LEFT JOIN tasks
             ON projects.id = tasks.project_id
+        LEFT JOIN groups
+            ON projects.group_id = groups.id
+        LEFT JOIN group_members
+            ON projects.group_id = group_members.group_id
+            AND group_members.user_id = ?
         WHERE projects.user_id = ?
+        OR group_members.user_id IS NOT NULL
         GROUP BY projects.id
         ORDER BY projects.created_at DESC
-    """, (session["user_id"],)).fetchall()
+    """, (
+        session["user_id"],
+        session["user_id"]
+    )).fetchall()
     
     projects = [dict(project) for project in projects]
 
@@ -1579,10 +1589,12 @@ def create_group_project(group_id):
     connection = get_db()
 
     member = connection.execute("""
-        SELECT *
+        SELECT group_members.*
         FROM group_members
-        WHERE group_id = ?
-        AND user_id = ?
+        JOIN groups
+            ON group_members.group_id = groups.id
+        WHERE group_members.group_id = ?
+        AND group_members.user_id = ?
     """, (
         group_id,
         session["user_id"]

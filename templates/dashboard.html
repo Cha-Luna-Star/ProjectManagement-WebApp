@@ -186,6 +186,12 @@
                                     {{ project["name"] }}
                                 </a>
                             </h3>
+                            
+                            {% if project["group_id"] %}
+                                <p>
+                                    Group: {{ project["group_name"] }}
+                                </p>
+                            {% endif %}
 
                             <p>
                                 {{ project["description"] }}
