@@ -146,6 +146,37 @@
             
             </div>
 
+            {% if group_members %}
+
+                <div>
+
+                    <label for="assigned_to">
+                        Assign To
+                    </label>
+
+                    <select
+                        id="assigned_to"
+                        name="assigned_to"
+                    >
+
+                        <option value="">
+                            Unassigned
+                        </option>
+
+                        {% for member in group_members %}
+
+                            <option value="{{ member['id'] }}">
+                                {{ member['username'] }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+            {% endif %}
+
             <div>
 
                 <label for="priority">

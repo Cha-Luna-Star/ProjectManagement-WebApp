@@ -605,30 +605,35 @@
                                     </button>
 
                                 </a>
-                                
+
+                            {% endif %}
+                            
+                            {% if not project["group_id"] or group_member["role"] in ["Owner", "Admin"] %}
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'delete_task',
+                                        project_id=project['id'],
+                                        task_id=task['id']
+                                    ) }}"
+                                >
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                    <button
+                                        type="submit"
+                                        class="delete-button"
+                                        onclick="return confirm(
+                                            'Are you sure you want to delete this task?'
+                                        );"
+                                    >
+                                        Delete Task
+                                    </button>
+
+                                </form>
+                            
                             {% endif %}
 
-                            <form
-                                method="POST"
-                                action="{{ url_for(
-                                    'delete_task',
-                                    project_id=project['id'],
-                                    task_id=task['id']
-                                ) }}"
-                            >
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                                <button
-                                    type="submit"
-                                    class="delete-button"
-                                    onclick="return confirm(
-                                        'Are you sure you want to delete this task?'
-                                    );"
-                                >
-                                    Delete Task
-                                </button>
-
-                            </form>
 
                         </div>
 

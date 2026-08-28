@@ -72,7 +72,9 @@ def init_db():
             status TEXT NOT NULL DEFAULT 'Pending',
             priority TEXT NOT NULL DEFAULT 'Medium',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (project_id) REFERENCES projects(id)
+            assigned_to INTEGER,
+            FOREIGN KEY (project_id) REFERENCES projects(id),
+            FOREIGN KEY (assigned_to) REFERENCES users(id)  
         )
     """)
         

@@ -1130,6 +1130,22 @@ def create_task(project_id):
         connection.close()
         return "Project not found", 404
 
+    group_members = []
+
+    if project["group_id"]:
+        group_members = connection.execute("""
+            SELECT
+                users.id,
+                users.username
+            FROM group_members
+            JOIN users
+                ON group_members.user_id = users.id
+            WHERE group_members.group_id = ?
+            ORDER BY users.username ASC
+        """, (
+            project["group_id"],
+        )).fetchall()
+        
     if request.method == "POST":
 
         title = request.form["title"].strip()
@@ -1202,7 +1218,8 @@ def create_task(project_id):
 
     return render_template(
         "create_task.html",
-        project=project
+        project=project,
+        group_members=group_members
     )
 
 @app.route("/projects/<int:project_id>/tasks/<int:task_id>/edit", methods=["GET", "POST"])
@@ -1405,7 +1422,11 @@ def delete_task(project_id, task_id):
     connection = get_db()
 
     task = connection.execute("""
-        SELECT tasks.id
+        SELECT
+            tasks.*,
+            projects.group_id,
+            projects.user_id AS project_owner_id,
+            group_members.role AS group_role
         FROM tasks
         JOIN projects
             ON tasks.project_id = projects.id
@@ -1413,7 +1434,6 @@ def delete_task(project_id, task_id):
             ON projects.group_id = group_members.group_id
             AND group_members.user_id = ?
         WHERE tasks.id = ?
-        AND tasks.project_id = ?
         AND (
             projects.user_id = ?
             OR group_members.user_id IS NOT NULL
@@ -1421,22 +1441,21 @@ def delete_task(project_id, task_id):
     """, (
         session["user_id"],
         task_id,
-        project_id,
         session["user_id"]
     )).fetchone()
 
     if task is None:
         connection.close()
         return "Task not found or you do not have permission", 403
+    if task["group_id"]:
 
+        if task["group_role"] not in ["Owner", "Admin"]:
+            return "You do not have permission to delete this task", 403
+    
     connection.execute("""
         DELETE FROM tasks
         WHERE id = ?
-        AND project_id = ?
-    """, (
-        task_id,
-        project_id
-    ))
+    """, (task_id,))
 
     connection.commit()
     connection.close()
@@ -1727,89 +1746,6 @@ def edit_group(group_id):
 
     return render_template(
         "edit_group.html",
-        group=group
-    )
-
-@app.route("/groups/<int:group_id>/projects/create", methods=["GET", "POST"])
-def create_group_project(group_id):
-
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    connection = get_db()
-
-    member = connection.execute("""
-        SELECT group_members.*
-        FROM group_members
-        JOIN groups
-            ON group_members.group_id = groups.id
-        WHERE group_members.group_id = ?
-        AND group_members.user_id = ?
-    """, (
-        group_id,
-        session["user_id"]
-    )).fetchone()
-
-    if member is None:
-        connection.close()
-        return "You are not a member of this group", 403
-    
-    if member["role"] not in ["Owner", "Admin"]:
-        connection.close()
-        return "You do not have permission to create projects in this group", 403
-
-    group = connection.execute("""
-        SELECT *
-        FROM groups
-        WHERE id = ?
-    """, (group_id,)).fetchone()
-
-    if group is None:
-        connection.close()
-        return "Group not found", 404
-
-    if request.method == "POST":
-
-        name = request.form.get("name", "").strip()
-        description = request.form.get("description", "").strip()
-
-        if not name:
-            connection.close()
-            flash("Project name is required.", "error")
-            return render_template(
-                "create_project.html",
-                group=group
-            )
-
-        connection.execute("""
-            INSERT INTO projects (
-                user_id,
-                group_id,
-                name,
-                description
-            )
-            VALUES (?, ?, ?, ?)
-        """, (
-            session["user_id"],
-            group_id,
-            name,
-            description
-        ))
-
-        connection.commit()
-        connection.close()
-
-        flash("Project created successfully!", "success")
-
-        return redirect(url_for(
-            "group",
-            group_id=group_id
-        ))
-
-    connection.close()
-
-    return render_template(
-        "create_project.html",
         group=group
     )
     
