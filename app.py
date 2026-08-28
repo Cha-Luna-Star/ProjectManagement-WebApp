@@ -1235,19 +1235,37 @@ def edit_task(project_id, task_id):
         return "Project not found", 404
 
     task = connection.execute("""
-        SELECT *
+        SELECT
+            tasks.*,
+            projects.group_id,
+            projects.user_id AS project_owner_id,
+            group_members.role AS group_role
         FROM tasks
-        WHERE id = ?
-        AND project_id = ?
+        JOIN projects
+            ON tasks.project_id = projects.id
+        LEFT JOIN group_members
+            ON projects.group_id = group_members.group_id
+            AND group_members.user_id = ?
+        WHERE tasks.id = ?
+        AND (
+            projects.user_id = ?
+            OR group_members.user_id IS NOT NULL
+        )
     """, (
+        session["user_id"],
         task_id,
-        project_id
+        session["user_id"]
     )).fetchone()
 
     if task is None:
         connection.close()
         return "Task not found", 404
 
+    if task["group_id"]:
+
+        if task["group_role"] not in ["Owner", "Admin"]:    
+            return "You do not have permission to edit this task", 403
+    
     if request.method == "POST":
 
         title = request.form.get("title", "").strip()

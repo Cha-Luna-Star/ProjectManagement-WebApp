@@ -135,41 +135,43 @@
 
 
             <div class="project-actions">
+                {% if not project["group_id"] or group_member["role"] in ["Owner", "Admin"] %}
 
-                <a href="{{ url_for(
-                    'edit_project',
-                    project_id=project['id']
-                ) }}">
+                    <a href="{{ url_for(
+                        'edit_project',
+                        project_id=project['id']
+                    ) }}">
 
-                    <button type="button">
-                        Edit Project
-                    </button>
+                        <button type="button">
+                            Edit Project
+                        </button>
 
-                </a>
+                    </a>
+                {% endif %}
 
                 {% if not project["group_id"] or project["user_id"] == session["user_id"] %}
             
-                <form
-                    method="POST"
-                    action="{{ url_for(
-                        'delete_project',
-                        project_id=project['id']
-                    ) }}"
-                >
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    
-                    <button
-                        type="submit"
-                        class="delete-button"
-                        onclick="return confirm(
-                            'Are you sure you want to delete this project?'
-                        );"
+                    <form
+                        method="POST"
+                        action="{{ url_for(
+                            'delete_project',
+                            project_id=project['id']
+                        ) }}"
                     >
-                        Delete Project
-                    </button>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <button
+                            type="submit"
+                            class="delete-button"
+                            onclick="return confirm(
+                                'Are you sure you want to delete this project?'
+                            );"
+                        >
+                            Delete Project
+                        </button>
 
-                </form>
-                
+                    </form>
+
                 {% endif %}
             </div>
 
@@ -589,18 +591,22 @@
                                 </form>
 
                             {% endif %}
-                            <a href="{{ url_for(
-                                'edit_task',
-                                project_id=project['id'],
-                                task_id=task['id']
-                            ) }}">
 
-                                <button type="button">
-                                    Edit Task
-                                </button>
+                            {% if not project["group_id"] or group_member["role"] in ["Owner", "Admin"] %}
 
-                            </a>
+                                <a href="{{ url_for(
+                                    'edit_task',
+                                    project_id=project['id'],
+                                    task_id=task['id']
+                                ) }}">
 
+                                    <button type="button">
+                                        Edit Task
+                                    </button>
+
+                                </a>
+                                
+                            {% endif %}
 
                             <form
                                 method="POST"
