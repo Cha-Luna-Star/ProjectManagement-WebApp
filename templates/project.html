@@ -481,7 +481,7 @@
                                     Due: {{ task["due_date"] }}
 
                                 {% endif %}
-
+                           
                             </p>
 
                         {% endif %}
@@ -560,13 +560,18 @@
                         <p>
                             {{ task["description"] }}
                         </p>
-
+                        
+                        {% if task["assigned_username"] %}
+                            <p>
+                                Assigned to: {{ task["assigned_username"] }}
+                            </p>
+                        {% endif %}
 
                         <small>
                             Created: {{ task["created_at"] }}
                         </small>
 
-
+                        
                         <div class="task-actions">
 
                             {% if task["status"] != "Completed" %}

@@ -346,9 +346,13 @@ def project(project_id):
     """, (project_id,)).fetchone()
 
     query = """
-        SELECT *
+        SELECT
+            tasks.*,
+            users.username AS assigned_username
         FROM tasks
-        WHERE project_id = ?
+        LEFT JOIN users
+            ON tasks.assigned_to = users.id
+        WHERE tasks.project_id = ?
     """
 
     params = [project_id]
@@ -1130,6 +1134,22 @@ def create_task(project_id):
         connection.close()
         return "Project not found", 404
 
+    can_assign_tasks = False
+
+    if project["group_id"]:
+        member = connection.execute("""
+            SELECT role
+            FROM group_members
+            WHERE group_id = ?
+            AND user_id = ?
+        """, (
+            project["group_id"],
+            session["user_id"]
+        )).fetchone()
+
+        if member and member["role"] in ["Owner", "Admin"]:
+            can_assign_tasks = True
+        
     group_members = []
 
     if project["group_id"]:
@@ -1152,7 +1172,8 @@ def create_task(project_id):
         description = request.form["description"].strip()
         due_date = request.form.get("due_date", "").strip()
         priority = request.form.get("priority", "").strip()
-
+        assigned_to = request.form.get("assigned_to", "").strip()
+        
         allowed_priorities = [
             "Low",
             "Medium",
@@ -1175,6 +1196,36 @@ def create_task(project_id):
                 project=project
             )
 
+        if assigned_to:
+
+            if not project["group_id"]:
+                connection.close()
+                flash("Tasks in personal projects cannot be assigned.", "error")
+                return render_template(
+                    "create_task.html",
+                    project=project,
+                    group_members=group_members
+                )
+
+        assigned_member = connection.execute("""
+            SELECT id
+            FROM group_members
+            WHERE group_id = ?
+            AND user_id = ?
+        """, (
+            project["group_id"],
+            assigned_to
+        )).fetchone()
+
+        if assigned_member is None:
+            connection.close()
+            flash("Invalid task assignee.", "error")
+            return render_template(
+                "create_task.html",
+                project=project,
+                group_members=group_members
+            )
+        
         if due_date:
             try:
                 date.fromisoformat(due_date)
@@ -1192,15 +1243,17 @@ def create_task(project_id):
                 title,
                 description,
                 priority,
-                due_date
+                due_date,
+                assigned_to
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
         """, (
             project_id,
             title,
             description,
             priority,
-            due_date
+            due_date,
+            assigned_to or None
         ))
 
         connection.commit()
@@ -1219,7 +1272,8 @@ def create_task(project_id):
     return render_template(
         "create_task.html",
         project=project,
-        group_members=group_members
+        group_members=group_members,
+        can_assign_tasks=can_assign_tasks
     )
 
 @app.route("/projects/<int:project_id>/tasks/<int:task_id>/edit", methods=["GET", "POST"])
