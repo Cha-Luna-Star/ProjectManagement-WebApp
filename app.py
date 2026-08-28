@@ -394,6 +394,19 @@ def project(project_id):
         params
     ).fetchall()
 
+    group_member = None
+
+    if project["group_id"]:
+        group_member = connection.execute("""
+            SELECT role
+            FROM group_members
+            WHERE group_id = ?
+            AND user_id = ?
+        """, (
+            project["group_id"],
+            session["user_id"]
+        )).fetchone()
+        
     connection.close()
 
     today = date.today()
@@ -423,6 +436,7 @@ def project(project_id):
         project=project,
         tasks=tasks,
         task_counts=task_counts,
+        group_member=group_member,
         username=session["username"]
     )
     

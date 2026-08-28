@@ -147,7 +147,8 @@
 
                 </a>
 
-
+                {% if not project["group_id"] or project["user_id"] == session["user_id"] %}
+            
                 <form
                     method="POST"
                     action="{{ url_for(
@@ -156,7 +157,7 @@
                     ) }}"
                 >
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
+                    
                     <button
                         type="submit"
                         class="delete-button"
@@ -168,7 +169,8 @@
                     </button>
 
                 </form>
-
+                
+                {% endif %}
             </div>
 
         </div>
