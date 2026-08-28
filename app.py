@@ -946,7 +946,9 @@ def edit_project(project_id):
     connection = get_db()
 
     project = connection.execute("""
-        SELECT projects.*
+        SELECT
+            projects.*,
+            group_members.role AS group_role
         FROM projects
         LEFT JOIN group_members
             ON projects.group_id = group_members.group_id
@@ -957,10 +959,10 @@ def edit_project(project_id):
             OR group_members.user_id IS NOT NULL
         )
     """, (
-        session["user_id"],
-        project_id,
-        session["user_id"]
-    )).fetchone()
+    session["user_id"],
+    project_id,
+    session["user_id"]
+)).fetchone()
 
     if project is None:
         connection.close()
@@ -1001,15 +1003,30 @@ def edit_project(project_id):
                 project=project
             )
 
-        connection.execute("""
-            UPDATE projects
-            SET name = ?, description = ?
-            WHERE id = ?
-        """, (
-            name,
-            description,
-            project_id
-        ))
+        if project["group_id"]:
+
+            connection.execute("""
+                UPDATE projects
+                SET name = ?, description = ?
+                WHERE id = ?
+            """, (
+                name,
+                description,
+                project_id
+            ))
+
+        else:
+
+            connection.execute("""
+                UPDATE projects
+                SET name = ?, description = ?
+                WHERE id = ? AND user_id = ?
+            """, (
+                name,
+                description,
+                project_id,
+                session["user_id"]
+            ))
 
         connection.commit()
         connection.close()
@@ -1020,7 +1037,11 @@ def edit_project(project_id):
             "project",
             project_id=project_id
         ))
-
+    if project["group_id"]:
+        if project["group_role"] not in ["Owner", "Admin"]:
+            connection.close()
+            return "You do not have permission to edit this group project", 403
+        
     connection.close()
 
     return render_template(
