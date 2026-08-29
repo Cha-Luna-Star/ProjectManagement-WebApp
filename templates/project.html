@@ -551,15 +551,36 @@
                                     In Progress
                                 </option>
 
-                                <option
-                                    value="Completed"
-                                    {% if task["status"] == "Completed" %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    Completed
-                                </option>
+                                {% if task["status"] != "Completed" and (
+                                        not project["group_id"]
+                                        or group_member["role"] in ["Owner", "Admin"]
+                                        or task["assigned_to"] == session["user_id"]
+                                ) %}
 
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for(
+                                            'complete_task',
+                                            project_id=project['id'],
+                                            task_id=task['id']
+                                        ) }}"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            value="{{ csrf_token() }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="complete-button"
+                                        >
+                                            Mark Complete
+                                        </button>
+                                    </form>
+
+                                {% endif %}
+                                
                             </select>
 
                         </form>

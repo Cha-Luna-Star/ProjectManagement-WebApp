@@ -180,9 +180,42 @@
                 </label>
             
                 <select
-                    id="priority"
                     name="priority"
+                    id="priority"
                 >
+                {% if group_members %}
+
+                    <div>
+                        <label for="assigned_to">
+                            Assign To
+                        </label>
+
+                        <select
+                            id="assigned_to"
+                            name="assigned_to"
+                        >
+
+                            <option value="">
+                                Unassigned
+                            </option>
+
+                            {% for member in group_members %}
+
+                                <option
+                                    value="{{ member['id'] }}"
+                                    {% if task['assigned_to'] == member['id'] %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ member['username'] }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                {% endif %}
             
                     <option value="Low"
                         {% if task["priority"] == "Low" %}selected{% endif %}>

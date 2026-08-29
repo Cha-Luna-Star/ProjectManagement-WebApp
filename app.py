@@ -1337,6 +1337,22 @@ def edit_task(project_id, task_id):
         connection.close()
         return "Task not found", 404
 
+    group_members = []
+
+    if task["group_id"]:
+        group_members = connection.execute("""
+            SELECT
+                users.id,
+                users.username
+            FROM group_members
+            JOIN users
+                ON group_members.user_id = users.id
+            WHERE group_members.group_id = ?
+            ORDER BY users.username ASC
+        """, (
+            task["group_id"],
+        )).fetchall()
+    
     if task["group_id"]:
 
         if task["group_role"] not in ["Owner", "Admin"]:    
@@ -1349,7 +1365,8 @@ def edit_task(project_id, task_id):
         status = request.form.get("status")
         priority = request.form.get("priority")
         due_date = request.form.get("due_date")
-
+        assigned_to = request.form.get("assigned_to", "").strip()
+        
         allowed_statuses = [
             "Pending",
             "In Progress",
@@ -1385,7 +1402,8 @@ def edit_task(project_id, task_id):
                 description = ?,
                 status = ?,
                 priority = ?,
-                due_date = ?
+                due_date = ?,
+                assigned_to = ?
             WHERE id = ?
             AND project_id = ?
         """, (
@@ -1394,6 +1412,7 @@ def edit_task(project_id, task_id):
             status,
             priority,
             due_date,
+            assigned_to or None,
             task_id,
             project_id
         ))
@@ -1413,7 +1432,8 @@ def edit_task(project_id, task_id):
     return render_template(
         "edit_task.html",
         task=task,
-        project=project
+        project=project,
+        group_members=group_members
     )
 
 @app.route(
@@ -1428,7 +1448,10 @@ def complete_task(project_id, task_id):
     connection = get_db()
 
     task = connection.execute("""
-        SELECT tasks.id
+        SELECT
+            tasks.*,
+            projects.group_id,
+            group_members.role AS group_role
         FROM tasks
         JOIN projects
             ON tasks.project_id = projects.id
@@ -1436,7 +1459,6 @@ def complete_task(project_id, task_id):
             ON projects.group_id = group_members.group_id
             AND group_members.user_id = ?
         WHERE tasks.id = ?
-        AND tasks.project_id = ?
         AND (
             projects.user_id = ?
             OR group_members.user_id IS NOT NULL
@@ -1444,7 +1466,6 @@ def complete_task(project_id, task_id):
     """, (
         session["user_id"],
         task_id,
-        project_id,
         session["user_id"]
     )).fetchone()
 
@@ -1452,6 +1473,15 @@ def complete_task(project_id, task_id):
         connection.close()
         return "Task not found", 404
 
+    if task["group_id"]:
+
+        if (
+            task["assigned_to"] != session["user_id"]
+            and task["group_role"] not in ["Owner", "Admin"]
+        ):
+            connection.close()
+            return "You do not have permission to complete this task", 4034
+        
     connection.execute("""
         UPDATE tasks
         SET status = 'Completed'
