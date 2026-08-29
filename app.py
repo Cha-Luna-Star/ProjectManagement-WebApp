@@ -311,7 +311,8 @@ def project(project_id):
     status = request.args.get("status")
     priority = request.args.get("priority")
     sort = request.args.get("sort", "newest")
-
+    assigned = request.args.get("assigned")
+    
     connection = get_db()
 
     project = connection.execute("""
@@ -365,6 +366,10 @@ def project(project_id):
         query += " AND priority = ?"
         params.append(priority)
 
+    if assigned == "me":
+        query += " AND tasks.assigned_to = ?"
+        params.append(session["user_id"])
+    
     if sort == "oldest":
         query += " ORDER BY created_at ASC"
 

@@ -266,7 +266,8 @@
                 <a href="{{ url_for(
                     'project',
                     project_id=project['id'],
-                    priority=request.args.get('priority')
+                    priority=request.args.get('priority'),
+                    assigned=request.args.get('assigned')
                 ) }}">
                     <button
                         type="button"
@@ -280,7 +281,8 @@
                     'project',
                     project_id=project['id'],
                     status='Pending',
-                    priority=request.args.get('priority')
+                    priority=request.args.get('priority'),
+                    assigned=request.args.get('assigned')
                 ) }}">
                     <button
                         type="button"
@@ -294,7 +296,8 @@
                     'project',
                     project_id=project['id'],
                     status='In Progress',
-                    priority=request.args.get('priority')
+                    priority=request.args.get('priority'),
+                    assigned=request.args.get('assigned')
                 ) }}">
                     <button
                         type="button"
@@ -308,7 +311,8 @@
                     'project',
                     project_id=project['id'],
                     status='Completed',
-                    priority=request.args.get('priority')
+                    priority=request.args.get('priority'),
+                    assigned=request.args.get('assigned')
                 ) }}">
                     <button
                         type="button"
@@ -339,7 +343,8 @@
                         'project',
                         project_id=project['id'],
                         status=request.args.get('status'),
-                        priority='Low'
+                        priority='Low',
+                        assigned=request.args.get('assigned')
                     ) }}">
                         <button
                             type="button"
@@ -353,7 +358,8 @@
                         'project',
                         project_id=project['id'],
                         status=request.args.get('status'),
-                        priority='Medium'
+                        priority='Medium',
+                        assigned=request.args.get('assigned')
                     ) }}">
                         <button
                             type="button"
@@ -367,7 +373,8 @@
                         'project',
                         project_id=project['id'],
                         status=request.args.get('status'),
-                        priority='High'
+                        priority='High',
+                        assigned=request.args.get('assigned')
                     ) }}">
                         <button
                             type="button"
@@ -384,7 +391,8 @@
                         project_id=project['id'],
                         status=request.args.get('status'),
                         priority=request.args.get('priority'),
-                        sort='newest'
+                        sort='newest',
+                        assigned=request.args.get('assigned')
                     ) }}">
                         <button
                             type="button"
@@ -399,7 +407,8 @@
                         project_id=project['id'],
                         status=request.args.get('status'),
                         priority=request.args.get('priority'),
-                        sort='oldest'
+                        sort='oldest',
+                        assigned=request.args.get('assigned')
                     ) }}">
                         <button
                             type="button"
@@ -414,7 +423,8 @@
                         project_id=project['id'],
                         status=request.args.get('status'),
                         priority=request.args.get('priority'),
-                        sort='priority'
+                        sort='priority',
+                        assigned=request.args.get('assigned')
                     ) }}">
                         <button
                             type="button"
@@ -429,7 +439,8 @@
                         project_id=project['id'],
                         status=request.args.get('status'),
                         priority=request.args.get('priority'),
-                        sort='status'
+                        sort='status',
+                        assigned=request.args.get('assigned')
                     ) }}">
                         <button
                             type="button"
@@ -438,6 +449,23 @@
                             Status
                         </button>
                     </a>
+
+                    <a href="{{ url_for(
+                        'project',
+                        project_id=project['id'],
+                        status=request.args.get('status'),
+                        priority=request.args.get('priority'),
+                        sort=request.args.get('sort'),
+                        assigned='me'
+                    ) }}">
+                        <button
+                            type="button"
+                            class="{% if request.args.get('assigned') == 'me' %}active{% endif %}"
+                        >
+                            My Tasks
+                        </button>
+                    </a>
+                    
                     <a
                         href="{{ url_for('project', project_id=project['id']) }}"
                         class="clear-filters"
