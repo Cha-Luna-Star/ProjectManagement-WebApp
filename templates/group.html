@@ -149,11 +149,11 @@
                         </span>
         
                         {% if member_item["id"] != session["user_id"] %}
-        
-                            {% if session["user_id"] == group["created_by"] %}
-        
+
+                            {% if member["role"] == "Owner" %}
+
                                 {% if member_item["role"] == "Member" %}
-        
+
                                     <form
                                         method="POST"
                                         action="{{ url_for(
@@ -167,14 +167,14 @@
                                             name="csrf_token"
                                             value="{{ csrf_token() }}"
                                         >
-        
+
                                         <button type="submit">
                                             Promote to Admin
                                         </button>
                                     </form>
-        
+
                                 {% elif member_item["role"] == "Admin" %}
-        
+
                                     <form
                                         method="POST"
                                         action="{{ url_for(
@@ -188,13 +188,14 @@
                                             name="csrf_token"
                                             value="{{ csrf_token() }}"
                                         >
-        
+
                                         <button type="submit">
                                             Demote to Member
                                         </button>
                                     </form>
-        
+
                                 {% endif %}
+
                                 <form
                                     method="POST"
                                     action="{{ url_for(
@@ -218,8 +219,8 @@
                                         Remove
                                     </button>
                                 </form>
-                            {% endif %}
-                            {% if member["role"] == "Admin"
+
+                            {% elif member["role"] == "Admin"
                                 and member_item["role"] == "Member" %}
 
                                 <form
@@ -247,6 +248,7 @@
                                 </form>
 
                             {% endif %}
+
                         {% endif %}
         
                     </div>

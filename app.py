@@ -1693,7 +1693,6 @@ def create_group():
 
     return render_template("create_group.html")
 
-@app.route("/groups/<int:group_id>")
 def group(group_id):
 
     if "user_id" not in session:
@@ -1710,6 +1709,20 @@ def group(group_id):
     if group is None:
         connection.close()
         return "Group not found", 404
+
+    member = connection.execute("""
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+        AND user_id = ?
+    """, (
+        group_id,
+        session["user_id"]
+    )).fetchone()
+
+    if member is None:
+        connection.close()
+        return "You are not a member of this group", 403
 
     members = connection.execute("""
         SELECT
@@ -1728,31 +1741,6 @@ def group(group_id):
                 ELSE 4
             END,
             users.username ASC
-    """, (group_id,)).fetchall()
-    
-    member = connection.execute("""
-        SELECT *
-        FROM group_members
-        WHERE group_id = ?
-        AND user_id = ?
-    """, (
-        group_id,
-        session["user_id"]
-    )).fetchone()
-
-    if member is None:
-        connection.close()
-        return "You are not a member of this group", 403
-
-    members = connection.execute("""
-        SELECT
-            group_members.*,
-            users.username
-        FROM group_members
-        JOIN users
-            ON group_members.user_id = users.id
-        WHERE group_members.group_id = ?
-        ORDER BY group_members.joined_at ASC
     """, (group_id,)).fetchall()
 
     projects = connection.execute("""
