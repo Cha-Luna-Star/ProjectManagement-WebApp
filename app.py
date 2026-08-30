@@ -1283,7 +1283,6 @@ def create_task(project_id):
 
 @app.route("/projects/<int:project_id>/tasks/<int:task_id>/edit", methods=["GET", "POST"])
 def edit_task(project_id, task_id):
-
     if "user_id" not in session:
         return redirect(url_for("login"))
 
@@ -1712,6 +1711,25 @@ def group(group_id):
         connection.close()
         return "Group not found", 404
 
+    members = connection.execute("""
+        SELECT
+            users.id,
+            users.username,
+            group_members.role
+        FROM group_members
+        JOIN users
+            ON group_members.user_id = users.id
+        WHERE group_members.group_id = ?
+        ORDER BY
+            CASE group_members.role
+                WHEN 'Owner' THEN 1
+                WHEN 'Admin' THEN 2
+                WHEN 'Member' THEN 3
+                ELSE 4
+            END,
+            users.username ASC
+    """, (group_id,)).fetchall()
+    
     member = connection.execute("""
         SELECT *
         FROM group_members

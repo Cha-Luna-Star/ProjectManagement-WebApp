@@ -67,49 +67,157 @@
 
         {% endif %}
 
+        {% if member["role"] != "Owner" %}
+
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'leave_group',
+                    group_id=group['id']
+                ) }}"
+            >
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
+                <button
+                    type="submit"
+                    onclick="return confirm(
+                        'Are you sure you want to leave this group?'
+                    );"
+                >
+                    Leave Group
+                </button>
+
+            </form>
+
+        {% endif %}
+
         {% if group["description"] %}
             <p>{{ group["description"] }}</p>
         {% endif %}
 
-        <h2>Members</h2>
+        <section class="group-members">
+
+            <h2>Members</h2>
+        
+            {% if members %}
+        
+                {% for member in members %}
+        
+                    <div class="group-member">
+        
+                        <span>
+                            {{ member["username"] }}
+                        </span>
+        
+                        <span>
+                            {{ member["role"] }}
+                        </span>
+        
+                        {% if member["id"] != session["user_id"] %}
+        
+                            {% if session["user_id"] == group["created_by"] %}
+        
+                                {% if member["role"] == "Member" %}
+        
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for(
+                                            'promote_group_member',
+                                            group_id=group['id'],
+                                            user_id=member['id']
+                                        ) }}"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            value="{{ csrf_token() }}"
+                                        >
+        
+                                        <button type="submit">
+                                            Promote to Admin
+                                        </button>
+                                    </form>
+        
+                                {% elif member["role"] == "Admin" %}
+        
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for(
+                                            'demote_group_member',
+                                            group_id=group['id'],
+                                            user_id=member['id']
+                                        ) }}"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            value="{{ csrf_token() }}"
+                                        >
+        
+                                        <button type="submit">
+                                            Demote to Member
+                                        </button>
+                                    </form>
+        
+                                {% endif %}
+        
+                            {% endif %}
+        
+                        {% endif %}
+        
+                    </div>
+        
+                {% endfor %}
+        
+            {% else %}
+        
+                <p>No members in this group.</p>
+        
+            {% endif %}
+        
+        </section>
 
         {% if member["role"] == "Owner" %}
 
-        <form
-            method="POST"
-            action="{{ url_for(
-                'add_group_member',
-                group_id=group['id']
-            ) }}"
-        >
-            <input
-                type="hidden"
-                name="csrf_token"
-                value="{{ csrf_token() }}"
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'add_group_member',
+                    group_id=group['id']
+                ) }}"
             >
-            <div>
-
-                <label for="username">
-                    Add Member
-                </label>
-
                 <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    placeholder="Enter username"
-                    required
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
                 >
+                <div>
 
-                <button type="submit">
-                    Add Member
-                </button>
+                    <label for="username">
+                        Add Member
+                    </label>
 
-            </div>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter username"
+                        required
+                    >
 
-        </form>
+                    <button type="submit">
+                        Add Member
+                    </button>
 
-{% endif %}
+                </div>
+
+            </form>
+
+    {% endif %}
         {% for member_item in members %}
 
         <div>
