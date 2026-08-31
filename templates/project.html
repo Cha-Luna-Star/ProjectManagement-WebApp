@@ -329,8 +329,10 @@
                     <a href="{{ url_for(
                         'project',
                         project_id=project['id'],
-                        status=request.args.get('status')
+                        status=request.args.get('status'),
+                        assigned=request.args.get('assigned')
                     ) }}">
+                    
                         <button
                             type="button"
                             class="{% if not request.args.get('priority') %}active{% endif %}"
