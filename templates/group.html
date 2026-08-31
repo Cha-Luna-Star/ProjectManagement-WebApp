@@ -12,12 +12,14 @@
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/base.css') }}">
-
+          
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/group.css') }}">
 </head>
 
 <body>
 
-    <main>
+    <main class = "group-page">
         {% with messages = get_flashed_messages(with_categories=true) %}
 
             {% if messages %}
@@ -53,82 +55,83 @@
             Back to Dashboard
 
         </a>
+        <div class="group-header">
+            <h1>{{ group["name"] }}</h1>
+            
+            {% if member["role"] == "Owner" %}
 
-        <h1>{{ group["name"] }}</h1>
-        
-        {% if member["role"] == "Owner" %}
-
-            <a href="{{ url_for(
-                'edit_group',
-                group_id=group['id']
-            ) }}">
-                Edit Group
-            </a>
-
-        {% endif %}
-        
-        {% if member["role"] == "Owner" %}
-
-            <form
-                method="POST"
-                action="{{ url_for(
-                    'delete_group',
+                <a href="{{ url_for(
+                    'edit_group',
                     group_id=group['id']
-                ) }}"
-            >
-                <input
-                    type="hidden"
-                    name="csrf_token"
-                    value="{{ csrf_token() }}"
+                ) }}">
+                    Edit Group
+                </a>
+
+            {% endif %}
+            
+            {% if member["role"] == "Owner" %}
+
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'delete_group',
+                        group_id=group['id']
+                    ) }}"
                 >
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
 
-                <button
-                    type="submit"
-                    onclick="return confirm(
-                        'Are you sure you want to delete this group?'
-                    );"
+                    <button
+                        type="submit"
+                        onclick="return confirm(
+                            'Are you sure you want to delete this group?'
+                        );"
+                    >
+                        Delete Group
+                    </button>
+                </form>
+
+            {% endif %}
+
+            {% if member["role"] != "Owner" %}
+
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'leave_group',
+                        group_id=group['id']
+                    ) }}"
                 >
-                    Delete Group
-                </button>
-            </form>
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
 
-        {% endif %}
+                    <button
+                        type="submit"
+                        onclick="return confirm(
+                            'Are you sure you want to leave this group?'
+                        );"
+                    >
+                        Leave Group
+                    </button>
 
-        {% if member["role"] != "Owner" %}
+                </form>
 
-            <form
-                method="POST"
-                action="{{ url_for(
-                    'leave_group',
-                    group_id=group['id']
-                ) }}"
-            >
-                <input
-                    type="hidden"
-                    name="csrf_token"
-                    value="{{ csrf_token() }}"
-                >
+            {% endif %}
 
-                <button
-                    type="submit"
-                    onclick="return confirm(
-                        'Are you sure you want to leave this group?'
-                    );"
-                >
-                    Leave Group
-                </button>
-
-            </form>
-
-        {% endif %}
-
-        {% if group["description"] %}
-            <p>{{ group["description"] }}</p>
-        {% endif %}
-        
-        <p>
-            Members: {{ members|length }}
-        </p>
+            {% if group["description"] %}
+                <p>{{ group["description"] }}</p>
+            {% endif %}
+            
+            <p>
+                Members: {{ members|length }}
+            </p>
+        </div>
 
         <section class="group-members">
 
@@ -149,59 +152,85 @@
                         </span>
         
                         {% if member_item["id"] != session["user_id"] %}
+                            <div class="group-add-member">
+                                {% if member["role"] == "Owner" %}
 
-                            {% if member["role"] == "Owner" %}
+                                    {% if member_item["role"] == "Member" %}
 
-                                {% if member_item["role"] == "Member" %}
-
-                                    <form
-                                        method="POST"
-                                        action="{{ url_for(
-                                            'promote_group_member',
-                                            group_id=group['id'],
-                                            user_id=member_item['id']
-                                        ) }}"
-                                    >
-                                        <input
-                                            type="hidden"
-                                            name="csrf_token"
-                                            value="{{ csrf_token() }}"
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'promote_group_member',
+                                                group_id=group['id'],
+                                                user_id=member_item['id']
+                                            ) }}"
                                         >
+                                            <input
+                                                type="hidden"
+                                                name="csrf_token"
+                                                value="{{ csrf_token() }}"
+                                            >
 
-                                        <button type="submit">
-                                            Promote to Admin
-                                        </button>
-                                    </form>
+                                            <button type="submit">
+                                                Promote to Admin
+                                            </button>
+                                        </form>
 
-                                {% elif member_item["role"] == "Admin" %}
+                                    {% elif member_item["role"] == "Admin" %}
 
-                                    <form
-                                        method="POST"
-                                        action="{{ url_for(
-                                            'demote_group_member',
-                                            group_id=group['id'],
-                                            user_id=member_item['id']
-                                        ) }}"
-                                    >
-                                        <input
-                                            type="hidden"
-                                            name="csrf_token"
-                                            value="{{ csrf_token() }}"
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'demote_group_member',
+                                                group_id=group['id'],
+                                                user_id=member_item['id']
+                                            ) }}"
                                         >
+                                            <input
+                                                type="hidden"
+                                                name="csrf_token"
+                                                value="{{ csrf_token() }}"
+                                            >
 
-                                        <button type="submit">
-                                            Demote to Member
-                                        </button>
-                                    </form>
+                                            <button type="submit">
+                                                Demote to Member
+                                            </button>
+                                        </form>
 
-                                {% endif %}
-                                
-                                {% if member_item["role"] != "Owner" %}
+                                    {% endif %}
+                                    
+                                    {% if member_item["role"] != "Owner" %}
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'transfer_group_ownership',
+                                                group_id=group['id'],
+                                                user_id=member_item['id']
+                                            ) }}"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="csrf_token"
+                                                value="{{ csrf_token() }}"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                onclick="return confirm(
+                                                    'Are you sure you want to transfer ownership to this member?'
+                                                );"
+                                            >
+                                                Transfer Ownership
+                                            </button>
+                                        </form>
+
+                                    {% endif %}
 
                                     <form
                                         method="POST"
                                         action="{{ url_for(
-                                            'transfer_group_ownership',
+                                            'remove_group_member',
                                             group_id=group['id'],
                                             user_id=member_item['id']
                                         ) }}"
@@ -215,68 +244,42 @@
                                         <button
                                             type="submit"
                                             onclick="return confirm(
-                                                'Are you sure you want to transfer ownership to this member?'
+                                                'Are you sure you want to remove this member?'
                                             );"
                                         >
-                                            Transfer Ownership
+                                            Remove
+                                        </button>
+                                    </form>
+
+                                {% elif member["role"] == "Admin"
+                                    and member_item["role"] == "Member" %}
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for(
+                                            'remove_group_member',
+                                            group_id=group['id'],
+                                            user_id=member_item['id']
+                                        ) }}"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            value="{{ csrf_token() }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            onclick="return confirm(
+                                                'Are you sure you want to remove this member?'
+                                            );"
+                                        >
+                                            Remove
                                         </button>
                                     </form>
 
                                 {% endif %}
-
-                                <form
-                                    method="POST"
-                                    action="{{ url_for(
-                                        'remove_group_member',
-                                        group_id=group['id'],
-                                        user_id=member_item['id']
-                                    ) }}"
-                                >
-                                    <input
-                                        type="hidden"
-                                        name="csrf_token"
-                                        value="{{ csrf_token() }}"
-                                    >
-
-                                    <button
-                                        type="submit"
-                                        onclick="return confirm(
-                                            'Are you sure you want to remove this member?'
-                                        );"
-                                    >
-                                        Remove
-                                    </button>
-                                </form>
-
-                            {% elif member["role"] == "Admin"
-                                and member_item["role"] == "Member" %}
-
-                                <form
-                                    method="POST"
-                                    action="{{ url_for(
-                                        'remove_group_member',
-                                        group_id=group['id'],
-                                        user_id=member_item['id']
-                                    ) }}"
-                                >
-                                    <input
-                                        type="hidden"
-                                        name="csrf_token"
-                                        value="{{ csrf_token() }}"
-                                    >
-
-                                    <button
-                                        type="submit"
-                                        onclick="return confirm(
-                                            'Are you sure you want to remove this member?'
-                                        );"
-                                    >
-                                        Remove
-                                    </button>
-                                </form>
-
-                            {% endif %}
-
+                            </div>
                         {% endif %}
         
                     </div>
@@ -329,55 +332,56 @@
 
        {% endif %}
 
+        <section class="group-projects">
 
-        <h2>Projects</h2>
-        
-        {% if member["role"] in ["Owner", "Admin"] %}
+            <h2>Projects</h2>
+            
+            {% if member["role"] in ["Owner", "Admin"] %}
 
-            <a href="{{ url_for(
-                'create_group_project',
-                group_id=group['id']
-            ) }}">
-                Create Project
-            </a>
+                <a href="{{ url_for(
+                    'create_group_project',
+                    group_id=group['id']
+                ) }}">
+                    Create Project
+                </a>
 
-        {% endif %}
+            {% endif %}
 
-        {% if projects %}
+            {% if projects %}
 
-            {% for project_item in projects %}
+                {% for project_item in projects %}
 
-                <div>
+                    <div class="group-project-card">
+                        <h3>
+                            {{ project_item["name"] }}
+                        </h3>
 
-                    <h3>
-                        {{ project_item["name"] }}
-                    </h3>
+                        {% if project_item["description"] %}
+                            <p>
+                                {{ project_item["description"] }}
+                            </p>
+                        {% endif %}
 
-                    {% if project_item["description"] %}
-                        <p>
-                            {{ project_item["description"] }}
-                        </p>
-                    {% endif %}
+                        <a href="{{ url_for(
+                            'project',
+                            project_id=project_item['id']
+                        ) }}">
+                            View Project
+                        </a>
 
-                    <a href="{{ url_for(
-                        'project',
-                        project_id=project_item['id']
-                    ) }}">
-                        View Project
-                    </a>
+                    </div>
 
-                </div>
+                {% endfor %}
 
-            {% endfor %}
+            {% else %}
 
-        {% else %}
+                <p class="group-empty-state">
+                    This group doesn't have any projects yet.
+                </p>
 
-            <p>
-                This group doesn't have any projects yet.
-            </p>
+            {% endif %}
 
-        {% endif %}
-
+        </section>
     </main>
 
 </body>

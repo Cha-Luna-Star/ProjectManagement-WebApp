@@ -1,0 +1,248 @@
+/* =========================
+   GROUP PAGE
+========================= */
+
+.group-page {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.group-header {
+    background: white;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.group-header h1 {
+    margin: 0 0 10px;
+    font-size: 30px;
+    color: #111827;
+}
+
+.group-description {
+    margin: 0 0 15px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.group-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.group-actions form {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.group-actions .delete-button {
+    background: #dc2626;
+}
+
+.group-actions .delete-button:hover {
+    background: #b91c1c;
+}
+
+
+/* =========================
+   GROUP MEMBERS
+========================= */
+
+.group-members {
+    background: white;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.group-members h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.group-member {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.group-member:last-child {
+    border-bottom: none;
+}
+
+.group-member > span:first-child {
+    flex: 1;
+    font-weight: 600;
+    color: #111827;
+}
+
+.group-member > span:nth-child(2) {
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.group-member form {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.group-member button {
+    padding: 7px 10px;
+    font-size: 12px;
+}
+
+.group-member form:last-child button {
+    background: #dc2626;
+}
+
+.group-member form:last-child button:hover {
+    background: #b91c1c;
+}
+
+
+/* =========================
+   ADD MEMBER
+========================= */
+
+.group-add-member {
+    background: white;
+    padding: 25px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.group-add-member h2 {
+    margin-top: 0;
+}
+
+.group-add-member form {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+
+/* =========================
+   GROUP PROJECTS
+========================= */
+
+.group-projects {
+    margin-top: 30px;
+}
+
+.group-projects-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.group-projects-header h2 {
+    margin: 0;
+}
+
+.group-project-card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.group-project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.10);
+}
+
+.group-project-card h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.group-project-card h3 a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.group-project-card h3 a:hover {
+    text-decoration: underline;
+}
+
+.group-project-card p {
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.group-project-card > a {
+    display: inline-block;
+    margin-top: 5px;
+}
+
+
+/* =========================
+   EMPTY PROJECT STATE
+========================= */
+
+.group-empty-state {
+    background: white;
+    padding: 40px 25px;
+    border-radius: 10px;
+    text-align: center;
+    color: #6b7280;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+    .group-page {
+        margin-top: 25px;
+    }
+
+    .group-member {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .group-member > span:first-child {
+        width: 100%;
+    }
+
+    .group-member > span:nth-child(2) {
+        align-self: flex-start;
+    }
+
+    .group-member form {
+        width: 100%;
+    }
+
+    .group-member button {
+        width: 100%;
+    }
+
+}
