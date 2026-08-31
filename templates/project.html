@@ -489,8 +489,7 @@
                     <div
                         class="task-card"
                         
-                        data-search="{{ task['title'] }} {{ task['description'] }}"
-                        
+                        data-search="{{ task['title'] }} {{ task['description'] }} {{ task['assigned_username'] or '' }}"                        
                     >                        
                         {% if task["due_date"] %}
 

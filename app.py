@@ -1414,7 +1414,8 @@ def edit_task(project_id, task_id):
     
     if task["group_id"]:
 
-        if task["group_role"] not in ["Owner", "Admin"]:    
+        if task["group_role"] not in ["Owner", "Admin"]:
+            connection.close()
             return "You do not have permission to edit this task", 403
     
     if request.method == "POST":
