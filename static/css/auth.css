@@ -4,13 +4,10 @@
 
 .auth-page {
     min-height: 100vh;
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     padding: 30px 20px;
-
     background: linear-gradient(
         135deg,
         #eef2ff,
@@ -26,13 +23,9 @@
 .auth-card {
     width: 100%;
     max-width: 430px;
-
     background: white;
-
     padding: 40px;
-
     border-radius: 16px;
-
     box-shadow:
         0 10px 30px rgba(0, 0, 0, 0.10);
 }
@@ -45,40 +38,28 @@
 .auth-logo {
     width: 55px;
     height: 55px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     margin: 0 auto 20px;
-
     border-radius: 12px;
-
     background: #2563eb;
-
     color: white;
-
     font-size: 24px;
     font-weight: bold;
 }
 
 .auth-card h2 {
     margin: 0;
-
     text-align: center;
-
     font-size: 28px;
-
     color: #111827;
 }
 
 .auth-subtitle {
     margin: 8px 0 30px;
-
     text-align: center;
-
     color: #6b7280;
-
     font-size: 14px;
 }
 
@@ -89,9 +70,7 @@
 
 .auth-card form {
     padding: 0;
-
     background: transparent;
-
     box-shadow: none;
 }
 
@@ -101,29 +80,19 @@
 
 .auth-card label {
     display: block;
-
     margin-bottom: 8px;
-
     color: #374151;
-
     font-size: 14px;
-
     font-weight: 600;
 }
 
 .auth-card input {
     width: 100%;
-
     padding: 13px 14px;
-
     border: 1px solid #d1d5db;
-
     border-radius: 8px;
-
     background: #f9fafb;
-
     font-size: 15px;
-
     transition:
         border-color 0.2s,
         box-shadow 0.2s,
@@ -132,11 +101,8 @@
 
 .auth-card input:focus {
     outline: none;
-
     background: white;
-
     border-color: #2563eb;
-
     box-shadow:
         0 0 0 3px rgba(37, 99, 235, 0.12);
 }
@@ -148,21 +114,13 @@
 
 .auth-card button[type="submit"] {
     width: 100%;
-
     padding: 13px;
-
     margin-top: 5px;
-
     border-radius: 8px;
-
     background: #2563eb;
-
     color: white;
-
     font-size: 15px;
-
     font-weight: 600;
-
     transition:
         background 0.2s,
         transform 0.1s;
@@ -183,23 +141,16 @@
 
 .auth-link {
     margin-top: 25px;
-
     padding-top: 20px;
-
     border-top: 1px solid #e5e7eb;
-
     text-align: center;
-
     color: #6b7280;
-
     font-size: 14px;
 }
 
 .auth-link a {
     color: #2563eb;
-
     font-weight: 600;
-
     text-decoration: none;
 }
 

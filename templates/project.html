@@ -313,7 +313,7 @@
                     status='Completed',
                     priority=request.args.get('priority'),
                     assigned=request.args.get('assigned')
-                ) }}">
+                ) }}git">
                     <button
                         type="button"
                         class="{% if request.args.get('status') == 'Completed' %}active{% endif %}"
@@ -332,7 +332,7 @@
                         status=request.args.get('status'),
                         assigned=request.args.get('assigned')
                     ) }}">
-                    
+
                         <button
                             type="button"
                             class="{% if not request.args.get('priority') %}active{% endif %}"

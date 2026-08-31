@@ -1,38 +1,28 @@
 .navbar {
     background: #1f2937;
     color: white;
-
     padding: 16px 40px;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
+    min-height: 64px;
 }
 
 .navbar h1 {
     margin: 0;
-
     font-size: 24px;
 }
 
 .navbar-right {
     display: flex;
-
     align-items: center;
-
     gap: 20px;
+    flex-wrap: wrap;
 }
 
 .navbar-username {
     color: #e5e7eb;
-
     font-size: 14px;
-}
-
-.navbar a {
-    color: white;
-
-    text-decoration: none;
 }
 
 .navbar a:hover {
@@ -41,14 +31,12 @@
 
 .logout-link {
     padding: 8px 14px;
-
     border-radius: 6px;
-
     background: #374151;
+    transition: background 0.2s ease;
 }
 
 .logout-link:hover {
     background: #4b5563;
-
     text-decoration: none !important;
 }

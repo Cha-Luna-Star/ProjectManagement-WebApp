@@ -99,11 +99,27 @@
         width: 100%;
     }
 
-    .task-counts {
-        flex-direction: column;
+}
+
+@media (max-width: 500px) {
+    .navbar-right {
+        width: 100%;
+        gap: 12px;
     }
 
-    .task-counts span {
-        width: 100%;
+    .navbar h1 {
+        font-size: 21px;
+    }
+
+    .dashboard {
+        padding: 0 15px;
+    }
+
+    .dashboard h2 {
+        font-size: 25px;
+    }
+
+    .back-button {
+        margin-bottom: 15px;
     }
 }

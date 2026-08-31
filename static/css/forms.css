@@ -17,17 +17,20 @@ label {
 }
 
 input {
-    height: 30px;
+    min-height: 40px;
 }
+
 input,
 textarea,
 select {
     width: 100%;
-    padding: 5px;
+    padding: 9px 10px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
     font-size: 14px;
     font-family: inherit;
+    background: white;
+    color: #222;
 }
 
 input:focus,
@@ -37,4 +40,17 @@ select:focus {
     border-color: #2563eb;
     box-shadow:
         0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled,
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }

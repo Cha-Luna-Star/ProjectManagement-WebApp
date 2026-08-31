@@ -10,7 +10,7 @@
 .task-card {
     background: white;
     padding: 20px;
-     margin-bottom: 15px;
+    margin-bottom: 15px;
     border-radius: 10px;
     box-shadow:
         0 2px 8px rgba(0, 0, 0, 0.08);
@@ -35,6 +35,7 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 15px;
+    flex-wrap: wrap;
 }
 
 .task-card-header h3 {
@@ -174,13 +175,6 @@
     background: #1d4ed8;
 }
 
-.clear-filters {
-    display: inline-block;
-    margin-top: 5px;
-    color: #6b7280;
-    font-size: 13px;
-    text-decoration: none;
-}
 
 .clear-filters {
     display: inline-flex;
@@ -283,21 +277,11 @@
 
 .task-due-date {
     margin-top: 10px;
-
     color: #6b7280 !important;
-
     font-size: 14px;
-
     font-weight: 600;
 }
 
-.task-due-date {
-    margin-top: 10px;
-
-    font-size: 14px;
-
-    font-weight: 600;
-}
 
 .due-normal {
     color: #6b7280 !important;
@@ -319,15 +303,18 @@
     background: #15803d;
 }
 
-.task-search {
-    gap: 8px;
-    margin-bottom: 10px;
-}
+
 
 
 /* =========================
    TASK SEARCH
 ========================= */
+
+.task-search {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
 
 .task-search input {
     width: 100%;
@@ -355,6 +342,7 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 10px;
+    flex-wrap: wrap;
 }
 
 .status-form label {
