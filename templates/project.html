@@ -611,9 +611,17 @@
                         </p>
                         
                         {% if task["assigned_username"] %}
-                            <p>
+
+                            <p class="task-assignee">
                                 Assigned to: {{ task["assigned_username"] }}
                             </p>
+
+                        {% else %}
+
+                            <p class="task-assignee">
+                                Unassigned
+                            </p>
+
                         {% endif %}
 
                         <small>

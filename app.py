@@ -1139,6 +1139,20 @@ def create_task(project_id):
         connection.close()
         return "Project not found", 404
 
+    if project["group_id"]:
+        members = connection.execute("""
+            SELECT
+                users.id,
+                users.username
+            FROM group_members
+            JOIN users
+                ON group_members.user_id = users.id
+            WHERE group_members.group_id = ?
+            ORDER BY users.username ASC
+        """, (project["group_id"],)).fetchall()
+    else:
+        members = []
+    
     can_assign_tasks = False
 
     if project["group_id"]:
@@ -1179,6 +1193,51 @@ def create_task(project_id):
         priority = request.form.get("priority", "").strip()
         assigned_to = request.form.get("assigned_to", "").strip()
         
+        if assigned_to:
+            try:
+                assigned_to = int(assigned_to)
+            except ValueError:
+                connection.close()
+                flash("Invalid assignee.", "error")
+                return render_template(
+                    "create_task.html",
+                    project=project,
+                    group_members=group_members,
+                    can_assign_tasks=can_assign_tasks
+                )
+
+            if project["group_id"]:
+                assigned_member = connection.execute("""
+                    SELECT user_id
+                    FROM group_members
+                    WHERE group_id = ?
+                    AND user_id = ?
+                """, (
+                    project["group_id"],
+                    assigned_to
+                )).fetchone()
+
+                if assigned_member is None:
+                    connection.close()
+                    flash("Assignee is not a member of this group.", "error")
+                    return render_template(
+                        "create_task.html",
+                        project=project,
+                        group_members=group_members,
+                        can_assign_tasks=can_assign_tasks
+                    )
+            else:
+                connection.close()
+                flash("Personal project tasks cannot be assigned.", "error")
+                return render_template(
+                    "create_task.html",
+                    project=project,
+                    group_members=group_members,
+                    can_assign_tasks=can_assign_tasks
+                )
+        else:
+            assigned_to = None
+            
         allowed_priorities = [
             "Low",
             "Medium",
@@ -1190,7 +1249,8 @@ def create_task(project_id):
             flash("Task title is required.", "error")
             return render_template(
                 "create_task.html",
-                project=project
+                project=project,
+                members=members
             )
 
         if priority not in allowed_priorities:
@@ -1366,6 +1426,33 @@ def edit_task(project_id, task_id):
         due_date = request.form.get("due_date")
         assigned_to = request.form.get("assigned_to", "").strip()
         
+        if assigned_to:
+            try:
+                assigned_to = int(assigned_to)
+            except ValueError:
+                connection.close()
+                return "Invalid assignee", 400
+
+            if task["group_id"]:
+                assigned_member = connection.execute("""
+                    SELECT id
+                    FROM group_members
+                    WHERE group_id = ?
+                    AND user_id = ?
+                """, (
+                    task["group_id"],
+                    assigned_to
+                )).fetchone()
+
+                if assigned_member is None:
+                    connection.close()
+                    return "Assignee is not a member of this group", 400
+            else:
+                connection.close()
+                return "Personal project tasks cannot be assigned", 400
+        else:
+            assigned_to = None
+    
         allowed_statuses = [
             "Pending",
             "In Progress",
@@ -1384,7 +1471,8 @@ def edit_task(project_id, task_id):
             return render_template(
                 "edit_task.html",
                 task=task,
-                project=project
+                project=project,
+                group_members=group_members
             )
 
         if status not in allowed_statuses:
