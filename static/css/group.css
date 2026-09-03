@@ -74,6 +74,7 @@
     gap: 10px;
     padding: 15px 0;
     border-bottom: 1px solid #e5e7eb;
+    flex-wrap: wrap;
 }
 
 .group-member:last-child {
@@ -87,12 +88,14 @@
 }
 
 .group-member > span:nth-child(2) {
+    min-width: 65px;
     padding: 5px 10px;
     border-radius: 20px;
     background: #f3f4f6;
     color: #374151;
     font-size: 12px;
     font-weight: 600;
+    text-align: center;
 }
 
 .group-member form {
@@ -105,6 +108,7 @@
 .group-member button {
     padding: 7px 10px;
     font-size: 12px;
+    white-space: nowrap;
 }
 
 .group-member form:last-child button {
@@ -176,10 +180,9 @@
 }
 
 .group-project-card h3 {
-    margin-top: 0;
-    margin-bottom: 8px;
+    margin: 0 0 10px;
+    font-size: 20px;
 }
-
 .group-project-card h3 a {
     color: #2563eb;
     text-decoration: none;
@@ -238,6 +241,15 @@
         margin-top: 25px;
     }
 
+    .group-actions {
+        flex-direction: column;
+    }
+    
+    .group-actions a,
+    .group-actions button {
+        width: 100%;
+    }
+
     .group-member {
         align-items: flex-start;
         flex-direction: column;
@@ -257,6 +269,21 @@
 
     .group-member button {
         width: 100%;
+    }
+
+    .group-add-member input,
+    .group-add-member button {
+        width: 100%;
+    }
+
+    .group-projects-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    
+    .group-projects-header > a {
+        width: 100%;
+        text-align: center;
     }
 
 }
