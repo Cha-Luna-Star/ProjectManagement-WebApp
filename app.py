@@ -758,20 +758,6 @@ def create_task(project_id):
         connection.close()
         return "Project not found", 404
 
-    if project["group_id"]:
-        members = connection.execute("""
-            SELECT
-                users.id,
-                users.username
-            FROM group_members
-            JOIN users
-                ON group_members.user_id = users.id
-            WHERE group_members.group_id = ?
-            ORDER BY users.username ASC
-        """, (project["group_id"],)).fetchall()
-    else:
-        members = []
-    
     can_assign_tasks = False
 
     if project["group_id"]:
@@ -806,8 +792,8 @@ def create_task(project_id):
         
     if request.method == "POST":
 
-        title = request.form["title"].strip()
-        description = request.form["description"].strip()
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
         due_date = request.form.get("due_date", "").strip()
         priority = request.form.get("priority", "").strip()
         assigned_to = request.form.get("assigned_to", "").strip()
@@ -824,7 +810,17 @@ def create_task(project_id):
                     group_members=group_members,
                     can_assign_tasks=can_assign_tasks
                 )
-
+                
+            if not can_assign_tasks:
+                connection.close()
+                flash("You do not have permission to assign tasks.", "error")
+                return render_template(
+                    "create_task.html",
+                    project=project,
+                    group_members=group_members,
+                    can_assign_tasks=can_assign_tasks
+                )
+    
             if project["group_id"]:
                 assigned_member = connection.execute("""
                     SELECT user_id
@@ -857,15 +853,6 @@ def create_task(project_id):
         else:
             assigned_to = None
         
-        if assigned_to and not can_assign_tasks:
-            connection.close()
-            flash("You do not have permission to assign tasks.", "error")
-            return render_template(
-                "create_task.html",
-                project=project,
-                group_members=group_members,
-                can_assign_tasks=can_assign_tasks
-            )  
         allowed_priorities = [
             "Low",
             "Medium",
@@ -941,7 +928,8 @@ def create_task(project_id):
         "create_task.html",
         project=project,
         group_members=group_members,
-        can_assign_tasks=can_assign_tasks
+        can_assign_tasks=can_assign_tasks,
+        username=session["username"]
     )
 
 @app.route("/projects/<int:project_id>/tasks/<int:task_id>/edit", methods=["GET", "POST"])
