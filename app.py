@@ -1401,6 +1401,7 @@ def create_group():
 
     return render_template("create_group.html")
 
+@app.route("/groups/<int:group_id>")
 def group(group_id):
 
     if "user_id" not in session:

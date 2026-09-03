@@ -199,6 +199,20 @@
     margin-top: 5px;
 }
 
+.group-projects-header > a {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.group-projects-header > a:hover {
+    background: #1d4ed8;
+}
 
 /* =========================
    EMPTY PROJECT STATE
