@@ -23,9 +23,10 @@
 }
 
 .group-description {
-    margin: 0 0 15px;
+    margin: 0 0 10px;
     color: #6b7280;
-    line-height: 1.5;
+    line-height: 1.6;
+    max-width: 750px;
 }
 
 .group-actions {
@@ -64,8 +65,8 @@
 }
 
 .group-members h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
+    margin: 0 0 20px;
+    font-size: 22px;
 }
 
 .group-member {
@@ -83,6 +84,7 @@
 
 .group-member > span:first-child {
     flex: 1;
+    min-width: 120px;
     font-weight: 600;
     color: #111827;
 }
@@ -183,6 +185,7 @@
     margin: 0 0 10px;
     font-size: 20px;
 }
+
 .group-project-card h3 a {
     color: #2563eb;
     text-decoration: none;
@@ -193,13 +196,20 @@
 }
 
 .group-project-card p {
+    margin: 0 0 12px;
     color: #6b7280;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .group-project-card > a {
     display: inline-block;
-    margin-top: 5px;
+    margin-top: 4px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.group-project-card > a:hover {
+    text-decoration: underline;
 }
 
 .group-projects-header > a {
@@ -286,4 +296,30 @@
         text-align: center;
     }
 
+    .group-header {
+        padding: 20px;
+    }
+    
+    .group-members {
+        padding: 20px;
+    }
+    
+    .group-add-member {
+        padding: 20px;
+    }
+
+    .group-header h1 {
+        font-size: 26px;
+        word-break: break-word;
+    }
+
+    .group-page {
+        padding: 0 15px;
+    }
+    
+    .group-header,
+    .group-members,
+    .group-add-member {
+        border-radius: 8px;
+    }
 }
