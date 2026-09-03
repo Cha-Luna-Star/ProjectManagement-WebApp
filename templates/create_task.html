@@ -112,6 +112,7 @@
                     type="text"
                     id="title"
                     name="title"
+                    value="{{ request.form.get('title', '') }}"
                     required
                 >
 
@@ -128,8 +129,7 @@
                     id="description"
                     name="description"
                     rows="5"
-                ></textarea>
-
+                >{{ request.form.get('description', '') }}</textarea>
             </div>
             
             <div>
@@ -142,8 +142,8 @@
                     type="date"
                     id="due_date"
                     name="due_date"
+                    value="{{ request.form.get('due_date', '') }}"
                 >
-            
             </div>
 
             {% if can_assign_tasks and group_members %}
@@ -159,13 +159,16 @@
                         name="assigned_to"
                     >
 
-                        <option value="">
+                        <option value="" {% if not request.form.get('assigned_to') %}selected{% endif %}>
                             Unassigned
                         </option>
-
+                        
                         {% for member in group_members %}
 
-                            <option value="{{ member['id'] }}">
+                            <option
+                                value="{{ member['id'] }}"
+                                {% if request.form.get('assigned_to') == member['id']|string %}selected{% endif %}
+                            >
                                 {{ member['username'] }}
                             </option>
 
@@ -188,15 +191,15 @@
                     name="priority"
                 >
             
-                    <option value="Low">
+                    <option value="Low" {% if request.form.get('priority') == 'Low' %}selected{% endif %}>
                         Low
                     </option>
-            
-                    <option value="Medium" selected>
+                    
+                    <option value="Medium" {% if request.form.get('priority', 'Medium') == 'Medium' %}selected{% endif %}>
                         Medium
                     </option>
-            
-                    <option value="High">
+                    
+                    <option value="High" {% if request.form.get('priority') == 'High' %}selected{% endif %}>
                         High
                     </option>
             
