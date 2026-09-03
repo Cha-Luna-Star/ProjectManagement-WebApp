@@ -856,7 +856,16 @@ def create_task(project_id):
                 )
         else:
             assigned_to = None
-            
+        
+        if assigned_to and not can_assign_tasks:
+            connection.close()
+            flash("You do not have permission to assign tasks.", "error")
+            return render_template(
+                "create_task.html",
+                project=project,
+                group_members=group_members,
+                can_assign_tasks=can_assign_tasks
+            )  
         allowed_priorities = [
             "Low",
             "Medium",
@@ -869,7 +878,8 @@ def create_task(project_id):
             return render_template(
                 "create_task.html",
                 project=project,
-                members=members
+                group_members=group_members,
+                can_assign_tasks=can_assign_tasks
             )
 
         if priority not in allowed_priorities:
@@ -877,37 +887,9 @@ def create_task(project_id):
             flash("Invalid priority.", "error")
             return render_template(
                 "create_task.html",
-                project=project
-            )
-
-        if assigned_to:
-
-            if not project["group_id"]:
-                connection.close()
-                flash("Tasks in personal projects cannot be assigned.", "error")
-                return render_template(
-                    "create_task.html",
-                    project=project,
-                    group_members=group_members
-                )
-
-        assigned_member = connection.execute("""
-            SELECT id
-            FROM group_members
-            WHERE group_id = ?
-            AND user_id = ?
-        """, (
-            project["group_id"],
-            assigned_to
-        )).fetchone()
-
-        if assigned_member is None:
-            connection.close()
-            flash("Invalid task assignee.", "error")
-            return render_template(
-                "create_task.html",
                 project=project,
-                group_members=group_members
+                group_members=group_members,
+                can_assign_tasks=can_assign_tasks
             )
         
         if due_date:
@@ -918,7 +900,9 @@ def create_task(project_id):
                 flash("Invalid due date.", "error")
                 return render_template(
                     "create_task.html",
-                    project=project
+                    project=project,
+                    group_members=group_members,
+                    can_assign_tasks=can_assign_tasks
                 )
 
         connection.execute("""
