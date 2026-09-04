@@ -108,7 +108,7 @@
                     type="text"
                     id="title"
                     name="title"
-                    value="{{ task['title'] }}"
+                    value="{{ request.form.get('title', task['title']) }}"
                     required
                 >
 
@@ -124,8 +124,8 @@
                     id="description"
                     name="description"
                     rows="5"
-                >{{ task['description'] }}</textarea>
-
+                    {{ request.form.get('description', task['description'] or '') }}</textarea>
+        
             </div>
             
             <div>
@@ -138,8 +138,7 @@
                     type="date"
                     id="due_date"
                     name="due_date"
-                    value="{{ task['due_date'] or '' }}"
-                >
+                    value="{{ request.form.get('due_date', task['due_date'] or '') }}"               >
             
             </div>
 
@@ -155,17 +154,17 @@
                 >
 
                     <option value="Pending"
-                        {% if task['status'] == 'Pending' %}selected{% endif %}>
+                        {% if request.form.get('status', task['status']) == 'Pending' %}selected{% endif %}
                         Pending
                     </option>
 
                     <option value="In Progress"
-                        {% if task['status'] == 'In Progress' %}selected{% endif %}>
+                        {% if request.form.get('status', task['status']) == "In-Progress" %}selected{% endif %}
                         In Progress
                     </option>
 
                     <option value="Completed"
-                        {% if task['status'] == 'Completed' %}selected{% endif %}>
+                        {% if request.form.get('status', task['status']) == 'Completed' %}selected{% endif %}
                         Completed
                     </option>
 
@@ -183,17 +182,16 @@
                     id="priority"
                 >
                     <option value="Low"
-                        {% if task["priority"] == "Low" %}selected{% endif %}>
-                        Low
+                        {% if request.form.get('priority', task['priority']) == 'Low' %}selected{% endif %}                        Low
                     </option>
             
                     <option value="Medium"
-                        {% if task["priority"] == "Medium" %}selected{% endif %}>
+                        {% if request.form.get('priority', task['priority']) == '<Medium>' %}selected{% endif %}                        Low
                         Medium
                     </option>
             
                     <option value="High"
-                        {% if task["priority"] == "High" %}selected{% endif %}>
+                        {% if request.form.get('priority', task['priority']) == 'High' %}selected{% endif %}                        Low
                         High
                     </option>
                 </select>
@@ -218,7 +216,7 @@
             
                             <option
                                 value="{{ member['id'] }}"
-                                {% if task['assigned_to'] == member['id'] %}
+                                {% if request.form.get('assigned_to', task['assigned_to']|string) == member['id']|string %}
                                     selected
                                 {% endif %}
                             >

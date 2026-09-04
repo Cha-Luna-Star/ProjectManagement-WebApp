@@ -449,122 +449,6 @@ def project(project_id):
         username=session["username"]
     )
     
-
-
-
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    connection = get_db()
-
-    project = connection.execute("""
-        SELECT *
-        FROM projects
-        WHERE id = ? AND user_id = ?
-    """, (project_id, session["user_id"])).fetchone()
-
-    if project is None:
-        connection.close()
-        return "Project not found", 404
-
-    if request.method == "POST":
-
-        name = request.form.get("name", "").strip()
-        description = request.form.get("description", "").strip()
-
-        if not name:
-            flash("Project name is required.", "error")
-            connection.close()
-            return render_template(
-                "edit_project.html",
-                project=project
-            )
-
-        if len(name) > 100:
-            flash("Project name must be 100 characters or less.", "error")
-            connection.close()
-            return render_template(
-                "edit_project.html",
-                project=project
-            )
-
-        if len(description) > 1000:
-            flash("Project description must be 1000 characters or less.", "error")
-            connection.close()
-            return render_template(
-                "edit_project.html",
-                project=project
-            )
-
-        connection.execute("""
-            UPDATE projects
-            SET name = ?, description = ?
-            WHERE id = ? AND user_id = ?
-        """, (
-            name,
-            description,
-            project_id,
-            session["user_id"]
-        ))
-
-        connection.commit()
-        connection.close()
-
-        flash("Project updated successfully!", "success")
-
-        return redirect(url_for(
-            "project",
-            project_id=project_id
-        ))
-
-    connection.close()
-
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    connection = get_db()
-
-    project = connection.execute("""
-        SELECT *
-        FROM projects
-        WHERE id = ? AND user_id = ?
-    """, (project_id, session["user_id"])).fetchone()
-
-    if project is None:
-        connection.close()
-        return "Project not found", 404
-
-    if request.method == "POST":
-
-        name = request.form["name"]
-        description = request.form["description"]
-
-        connection.execute("""
-            UPDATE projects
-            SET name = ?, description = ?
-            WHERE id = ? AND user_id = ?
-        """, (
-            name,
-            description,
-            project_id,
-            session["user_id"]
-        ))
-
-        connection.commit()
-        connection.close()
-
-        return redirect(url_for(
-            "project",
-            project_id=project_id
-        ))
-
-    connection.close()
-
-    return render_template(
-        "edit_project.html",
-        project=project
-    )
-
 @app.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
 def edit_project(project_id):
 
@@ -808,7 +692,8 @@ def create_task(project_id):
                     "create_task.html",
                     project=project,
                     group_members=group_members,
-                    can_assign_tasks=can_assign_tasks
+                    can_assign_tasks=can_assign_tasks,
+                    username=session["username"]
                 )
                 
             if not can_assign_tasks:
@@ -818,7 +703,8 @@ def create_task(project_id):
                     "create_task.html",
                     project=project,
                     group_members=group_members,
-                    can_assign_tasks=can_assign_tasks
+                    can_assign_tasks=can_assign_tasks,
+                    username=session["username"]
                 )
     
             if project["group_id"]:
@@ -839,7 +725,8 @@ def create_task(project_id):
                         "create_task.html",
                         project=project,
                         group_members=group_members,
-                        can_assign_tasks=can_assign_tasks
+                        can_assign_tasks=can_assign_tasks,
+                        username=session["username"]
                     )
             else:
                 connection.close()
@@ -848,7 +735,8 @@ def create_task(project_id):
                     "create_task.html",
                     project=project,
                     group_members=group_members,
-                    can_assign_tasks=can_assign_tasks
+                    can_assign_tasks=can_assign_tasks,
+                    username=session["username"]
                 )
         else:
             assigned_to = None
@@ -866,7 +754,8 @@ def create_task(project_id):
                 "create_task.html",
                 project=project,
                 group_members=group_members,
-                can_assign_tasks=can_assign_tasks
+                can_assign_tasks=can_assign_tasks,
+                username=session["username"]
             )
 
         if priority not in allowed_priorities:
@@ -876,7 +765,8 @@ def create_task(project_id):
                 "create_task.html",
                 project=project,
                 group_members=group_members,
-                can_assign_tasks=can_assign_tasks
+                can_assign_tasks=can_assign_tasks,
+                username=session["username"]
             )
         
         if due_date:
@@ -889,7 +779,8 @@ def create_task(project_id):
                     "create_task.html",
                     project=project,
                     group_members=group_members,
-                    can_assign_tasks=can_assign_tasks
+                    can_assign_tasks=can_assign_tasks,
+                    username=session["username"]
                 )
 
         connection.execute("""
@@ -1027,7 +918,7 @@ def edit_task(project_id, task_id):
 
             if task["group_id"]:
                 assigned_member = connection.execute("""
-                    SELECT id
+                    SELECT user_id
                     FROM group_members
                     WHERE group_id = ?
                     AND user_id = ?
@@ -1064,17 +955,46 @@ def edit_task(project_id, task_id):
                 "edit_task.html",
                 task=task,
                 project=project,
-                group_members=group_members
+                group_members=group_members,
+                username=session["username"]
             )
 
         if status not in allowed_statuses:
             connection.close()
-            return "Invalid status", 400
+            flash("Invalid status.", "error")
+            return render_template(
+                "edit_task.html",
+                task=task,
+                project=project,
+                group_members=group_members,
+                username=session["username"]
+            )
 
         if priority not in allowed_priorities:
             connection.close()
-            return "Invalid priority", 400
+            flash("Invalid priority.", "error")
+            return render_template(
+                "edit_task.html",
+                task=task,
+                project=project,
+                group_members=group_members,
+                username=session["username"]
+            )
 
+        if due_date:
+            try:
+                date.fromisoformat(due_date)
+            except ValueError:
+                connection.close()
+                flash("Invalid due date.", "error")
+                return render_template(
+                    "edit_task.html",
+                    task=task,
+                    project=project,
+                    group_members=group_members,
+                    username=session["username"]
+                )
+        
         connection.execute("""
             UPDATE tasks
             SET title = ?,
@@ -1112,7 +1032,8 @@ def edit_task(project_id, task_id):
         "edit_task.html",
         task=task,
         project=project,
-        group_members=group_members
+        group_members=group_members,
+        username=session["username"]
     )
 
 @app.route(
