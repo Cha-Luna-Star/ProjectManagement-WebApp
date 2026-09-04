@@ -297,13 +297,13 @@
         </section>
 
         {% if member["role"] == "Owner" %}
-
             <form
                 method="POST"
                 action="{{ url_for(
                     'add_group_member',
                     group_id=group['id']
                 ) }}"
+                class="group-add-member"
             >
                 <input
                     type="hidden"
@@ -312,9 +312,7 @@
                 >
                 <div>
 
-                    <label for="username">
-                        Add Member
-                    </label>
+                    <label for="username">Username</label>
 
                     <input
                         type="text"
