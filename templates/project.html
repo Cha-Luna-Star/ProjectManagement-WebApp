@@ -85,7 +85,7 @@
         <div class="project-header">
 
             <a
-                href="{{ url_for('dashboard', project_id=project['id']) }}"
+                href="{{ url_for('dashboard') }}"
                 class="back-button"
             >
                 <svg
@@ -233,28 +233,15 @@
         </div>
 
 
-        <form
-            method="GET"
-            action="{{ url_for(
-                'project',
-                project_id=project['id']
-            ) }}"
-            class="task-search"
-        >
         <div class="task-search">
-
             <input
                 type="search"
                 id="taskSearch"
                 placeholder="Search tasks..."
                 autocomplete="off"
             >
-        
         </div>
 
-
-
-        </form>
         <!-- FILTERS -->
 
         <div class="task-filters">
@@ -313,7 +300,7 @@
                     status='Completed',
                     priority=request.args.get('priority'),
                     assigned=request.args.get('assigned')
-                ) }}git">
+                ) }}">
                     <button
                         type="button"
                         class="{% if request.args.get('status') == 'Completed' %}active{% endif %}"
@@ -524,7 +511,12 @@
                             ) }}"
                             class="status-form"
                         >
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="{{ csrf_token() }}"
+                            >
+
                             <label for="status-{{ task['id'] }}">
                                 Status
                             </label>
@@ -551,36 +543,8 @@
                                 >
                                     In Progress
                                 </option>
-
-                                {% if task["status"] != "Completed" and (
-                                        not project["group_id"]
-                                        or group_member["role"] in ["Owner", "Admin"]
-                                        or task["assigned_to"] == session["user_id"]
-                                ) %}
-
-                                    <form
-                                        method="POST"
-                                        action="{{ url_for(
-                                            'complete_task',
-                                            project_id=project['id'],
-                                            task_id=task['id']
-                                        ) }}"
-                                    >
-                                        <input
-                                            type="hidden"
-                                            name="csrf_token"
-                                            value="{{ csrf_token() }}"
-                                        >
-
-                                        <button
-                                            type="submit"
-                                            class="complete-button"
-                                        >
-                                            Mark Complete
-                                        </button>
-                                    </form>
-
-                                {% endif %}
+                            </select>
+                        </form>
                                 
                             </select>
 

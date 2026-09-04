@@ -263,56 +263,72 @@
             {% endif %}
 
         </div>
-        <section class="dashboard-section">
+        <section class="dashboard-groups">
 
-            <div class="section-header">
+            <div class="dashboard-groups-header">
         
                 <div>
                     <h2>My Groups</h2>
-                    <p>Collaborate with your team on shared projects.</p>
+        
+                    <p>
+                        Collaborate with your team on shared projects.
+                    </p>
                 </div>
         
-                <a href="{{ url_for('create_group') }}"
-                   class="button">
-                    Create Group
+                <a
+                    href="{{ url_for('create_group') }}"
+                    class="create-group-button"
+                >
+                    + Create Group
                 </a>
         
             </div>
         
             {% if groups %}
         
-                <div class="project-grid">
+                <div class="group-list">
         
                     {% for group in groups %}
         
-                        <div class="project-card">
+                        <div class="dashboard-group-card">
         
-                            <h3>
-                                {{ group["name"] }}
-                            </h3>
+                            <div class="dashboard-group-content">
         
-                            {% if group["description"] %}
+                                <div class="dashboard-group-title">
         
-                                <p>
-                                    {{ group["description"] }}
-                                </p>
+                                    <h3>
+                                        {{ group["name"] }}
+                                    </h3>
         
-                            {% else %}
+                                    <span class="group-role">
+                                        {{ group["role"] }}
+                                    </span>
         
-                                <p>
-                                    No description.
-                                </p>
+                                </div>
         
-                            {% endif %}
+                                {% if group["description"] %}
         
-                            <span>
-                                {{ group["role"] }}
-                            </span>
+                                    <p>
+                                        {{ group["description"] }}
+                                    </p>
         
-                            <a href="{{ url_for(
-                                'group',
-                                group_id=group['id']
-                            ) }}">
+                                {% else %}
+        
+                                    <p class="no-group-description">
+                                        No description.
+                                    </p>
+        
+                                {% endif %}
+        
+                            </div>
+        
+                            <a
+                                href="{{ url_for(
+                                    'group',
+                                    group_id=group['id']
+                                ) }}"
+                                class="view-group-button"
+                            >
                                 View Group
                             </a>
         
@@ -324,7 +340,7 @@
         
             {% else %}
         
-                <div class="empty-state">
+                <div class="groups-empty-state">
         
                     <h3>No groups yet</h3>
         
@@ -332,9 +348,11 @@
                         Create a group to start collaborating with others.
                     </p>
         
-                    <a href="{{ url_for('create_group') }}"
-                       class="button">
-                        Create Your First Group
+                    <a
+                        href="{{ url_for('create_group') }}"
+                        class="create-group-button"
+                    >
+                        + Create Your First Group
                     </a>
         
                 </div>
