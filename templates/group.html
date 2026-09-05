@@ -66,7 +66,9 @@
                         'edit_group',
                         group_id=group['id']
                     ) }}">
-                        Edit Group
+                        <button type="button">
+                            Edit Group
+                        </button>
                     </a>
 
                 {% endif %}
@@ -80,14 +82,11 @@
                             group_id=group['id']
                         ) }}"
                     >
-                        <input
-                            type="hidden"
-                            name="csrf_token"
-                            value="{{ csrf_token() }}"
-                        >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                         <button
                             type="submit"
+                            class="delete-button"
                             onclick="return confirm(
                                 'Are you sure you want to delete this group?'
                             );"
@@ -354,20 +353,30 @@
 
                 {% for project_item in projects %}
 
-                    <div class="group-project-card">
+                <div class="group-project-card">
+
+                    <div class="group-project-content">
+                
                         <h3>
                             <a href="{{ url_for('project', project_id=project_item['id']) }}">
                                 {{ project_item["name"] }}
                             </a>
                         </h3>
-
+                
                         {% if project_item["description"] %}
-                            <p>
-                                {{ project_item["description"] }}
-                            </p>
+                            <p>{{ project_item["description"] }}</p>
                         {% endif %}
-
+                
                     </div>
+                
+                    <a
+                        href="{{ url_for('project', project_id=project_item['id']) }}"
+                        class="view-project-button"
+                    >
+                        View Project →
+                    </a>
+                
+                </div>
 
                 {% endfor %}
 

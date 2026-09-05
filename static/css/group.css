@@ -207,6 +207,11 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.10);
 }
 
+.group-project-content {
+    flex: 1;
+    min-width: 0;
+}
+
 .group-project-card h3 {
     margin: 0;
     font-size: 19px;
@@ -227,22 +232,20 @@
     line-height: 1.5;
 }
 
-.group-project-card p:last-child {
-    margin-bottom: 0;
-}
-
-.group-project-card::after {
-    content: "View Project →";
+.view-project-button {
     flex-shrink: 0;
-    padding: 8px 12px;
+    padding: 9px 14px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
+    background: white;
     color: #374151;
-    font-size: 13px;
+    text-decoration: none;
+    font-size: 14px;
     font-weight: 600;
+    transition: 0.2s;
 }
 
-.group-project-card:hover::after {
+.view-project-button:hover {
     border-color: #2563eb;
     color: #2563eb;
     background: #eff6ff;
@@ -318,11 +321,11 @@
     }
     
     .group-project-card {
-        align-items: flex-start;
+        align-items: stretch;
         flex-direction: column;
     }
     
-    .group-project-card::after {
+    .view-project-button {
         width: 100%;
         text-align: center;
     }
